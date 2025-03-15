@@ -1,0 +1,6 @@
+CREATE TABLE cursos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200)  NOT NULL,
+    description varchar(500) NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
