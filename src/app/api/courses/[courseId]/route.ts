@@ -6,6 +6,8 @@ type RequestBody = {
   affectedRows: number;
 };
 
+// deprecated (se uso con tabla de ejemplo no la actual)
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ courseId: number }> }

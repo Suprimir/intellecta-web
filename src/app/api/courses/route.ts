@@ -6,6 +6,8 @@ type RequestBody = {
   affectedRows: number;
 };
 
+// deprecated (se uso con tabla de ejemplo no la actual)
+
 export async function GET() {
   try {
     const result = await pool.query("SELECT * FROM cursos");
