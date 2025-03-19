@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
+import bcrytp from 'bcrypt'
 
 type RequestBody = {
   insertId: number;
@@ -50,12 +51,14 @@ export async function POST(request: Request) {
       );
     }
     const userUUID = crypto.randomUUID();
+    
+    const hashedPassword = bcrytp.hashSync(password, 10)
 
     const result: RequestBody = await pool.query("INSERT INTO users SET ?", {
       userID: userUUID,
       username,
       email,
-      password,
+      password: hashedPassword,
     });
 
     return NextResponse.json({

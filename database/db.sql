@@ -4,7 +4,7 @@ CREATE TABLE users (
  userID VARCHAR(100) PRIMARY KEY NOT NULL, 
  username VARCHAR(60) NOT NULL UNIQUE,
  email VARCHAR(70) NOT NULL UNIQUE UNIQUE,
- password VARCHAR(40) NOT NULL,
+ password VARCHAR(200) NOT NULL,
  rol ENUM ('alumno', 'instructor', 'admin') NOT NULL, /* Podrian ser otros roles */
  profilePicture TEXT /* Opcional */
  );
@@ -56,3 +56,5 @@ foreign key (id_Categoria) references categorias (id_Categoria) on delete cascad
  );
 
 DROP DATABASE webcursos;
+
+SELECT * FROM users;
