@@ -3,9 +3,9 @@ use webcursos;
 
 CREATE TABLE usuarios (
  id_Usuario INT PRIMARY KEY NOT NULL, 
- nombre_Usuario VARCHAR(60) NOT NULL,
+ nombre_Usuario VARCHAR(60) NOT NULL UNIQUE,
  apellidos_Usuario VARCHAR(70) NOT NULL,
- correo_Usuario VARCHAR(70) NOT NULL UNIQUE,
+ correo_Usuario VARCHAR(70) NOT NULL UNIQUE UNIQUE,
  contraseña_Usuario VARCHAR(40) NOT NULL,
  rol_Usuario ENUM ('alumno', 'instructor', 'admin') NOT NULL, /* Podrian ser otros roles */
  foto_Usuario TEXT /* Opcional */

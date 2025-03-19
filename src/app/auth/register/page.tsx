@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SignUpValidation } from "@/app/actions/auth";
+import { SignUp } from "@/app/actions/auth";
 
 interface TouchedFields {
   username: boolean;
@@ -32,6 +32,12 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
 
+  const [passValidations, setPassValidations] = useState({
+    mayus: "",
+    numbers: "",
+    symbols: "",
+  });
+
   useEffect(() => {
     if (username) {
       setErrors((prev) => ({
@@ -54,13 +60,65 @@ export default function RegisterPage() {
     }
   }, [email]);
 
+  useEffect(() => {
+    if (password) {
+      const isPassValidLength = password.length > 8;
+      const isPassValidMayus = /[A-Z]+/.test(password);
+      const isPassValidNumbers = /[0-9]+/.test(password);
+      const isPassValidSymbols = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(
+        password
+      );
+
+      setErrors((prev) => ({
+        ...prev,
+        password: isPassValidLength
+          ? ""
+          : "La contraseña debe ser mayor a 8 caracteres.",
+      }));
+
+      if (isPassValidLength) {
+        setPassValidations((prev) => ({
+          ...prev,
+          mayus: isPassValidMayus ? "" : "Colocar mayusculas [A-Z].",
+          numbers: isPassValidNumbers ? "" : "Colocar numeros [0-9].",
+          symbols: isPassValidSymbols ? "" : "Colocar simbolos [@!#%].",
+        }));
+      }
+    }
+  }, [password]);
+
+  useEffect(() => {
+    if (confirmPassword) {
+      setErrors((prev) => ({
+        ...prev,
+        confirmPassword:
+          confirmPassword == password ? "" : "Las contraseñas no coinciden.",
+      }));
+    }
+  }, [confirmPassword]);
+
   const handleBlur = (field: keyof TouchedFields) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
+  const handleSubmit = (formData: FormData) => {
+    setTouched({
+      username: true,
+      email: true,
+      password: true,
+      confirmPassword: true,
+    });
+
+    if (Object.values(errors).some((error) => error != "")) {
+      return;
+    }
+
+    return SignUp(formData);
+  };
+
   return (
     <div className="h-[calc(100vh-7rem)] flex justify-center items-center">
-      <form action={SignUpValidation} className="w-1/4">
+      <form action={handleSubmit} className="w-1/4">
         <h1 className="font-bold text-slate-300 text-4xl mb-4 text-center">
           Register
         </h1>
@@ -104,8 +162,36 @@ export default function RegisterPage() {
             id="password"
             name="password"
             type="password"
+            onChange={(e) => setPassword(e.target.value)}
+            onBlur={() => handleBlur("password")}
             className="p-3 mb-2 rounded bg-slate-900 text-slate-300 w-full"
           />
+          {touched.password && errors.password && (
+            <p className="text-sm text-red-500">{errors.password}</p>
+          )}
+          {(passValidations.mayus ||
+            passValidations.numbers ||
+            passValidations.symbols) &&
+            !errors.password && (
+              <p className="text-red-500 text-sm">
+                Puedes mejorar tu contraseña de la siguientes maneras:
+              </p>
+            )}
+          <ul className="list-disc">
+            {passValidations.mayus && !errors.password && (
+              <li className="text-sm text-red-500">{passValidations.mayus}</li>
+            )}
+            {passValidations.numbers && !errors.password && (
+              <li className="text-sm text-red-500">
+                {passValidations.numbers}
+              </li>
+            )}
+            {passValidations.symbols && !errors.password && (
+              <li className="text-sm text-red-500">
+                {passValidations.symbols}
+              </li>
+            )}
+          </ul>
         </div>
         <div>
           <label htmlFor="confirmPassword" className="text-white mb-2 text-sm ">
@@ -114,9 +200,13 @@ export default function RegisterPage() {
           <input
             id="confirmPassword"
             name="confirmPassword"
-            type="password"
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            onBlur={() => handleBlur("confirmPassword")}
             className="p-3 mb-2 rounded bg-slate-900 text-slate-300 w-full"
           />
+          {touched.confirmPassword && errors.confirmPassword && (
+            <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+          )}
         </div>
         <button
           type="submit"
