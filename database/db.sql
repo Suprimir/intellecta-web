@@ -1,31 +1,28 @@
 CREATE DATABASE webcursos;
 use webcursos;
-
-CREATE TABLE usuarios (
- id_Usuario INT PRIMARY KEY NOT NULL, 
- nombre_Usuario VARCHAR(60) NOT NULL UNIQUE,
- apellidos_Usuario VARCHAR(70) NOT NULL,
- correo_Usuario VARCHAR(70) NOT NULL UNIQUE UNIQUE,
- contraseña_Usuario VARCHAR(40) NOT NULL,
- rol_Usuario ENUM ('alumno', 'instructor', 'admin') NOT NULL, /* Podrian ser otros roles */
- foto_Usuario TEXT /* Opcional */
+CREATE TABLE users (
+ userID VARCHAR(100) PRIMARY KEY NOT NULL, 
+ username VARCHAR(60) NOT NULL UNIQUE,
+ email VARCHAR(70) NOT NULL UNIQUE UNIQUE,
+ password VARCHAR(40) NOT NULL,
+ rol ENUM ('alumno', 'instructor', 'admin') NOT NULL, /* Podrian ser otros roles */
+ profilePicture TEXT /* Opcional */
  );
- 
 CREATE TABLE categorias (
 id_Categoria INT PRIMARY KEY NOT NULL,
 descripcion_Categoria VARCHAR(25)
 );
-
+select * from users;
 CREATE TABLE cursos (
 id_Curso INT PRIMARY KEY NOT NULL, 
 nombre_Curso VARCHAR(50) NOT NULL,
 descripcion__Curso TEXT,
 fecha_Curso DATETIME NOT NULL,
 duracion_Curso DATE,
-id_Instructor INT NOT NULL,
+id_Instructor VARCHAR(100) NOT NULL,
 id_Categoria INT NOT NULL,
 material TEXT, /* Opcional */
-foreign key (id_Instructor) references usuarios (id_Usuario) on delete cascade,
+foreign key (id_Instructor) references users (userId) on delete cascade,
 foreign key (id_Categoria) references categorias (id_Categoria) on delete cascade
 );
  
@@ -40,22 +37,22 @@ foreign key (id_Categoria) references categorias (id_Categoria) on delete cascad
  
  CREATE TABLE mensajes ( 
  id_Mensajes INT PRIMARY KEY NOT NULL, 
- id_UReceptor INT NOT NULL, 
- id_UEmisor INT NOT NULL, 
+ id_UReceptor VARCHAR(100) NOT NULL, 
+ id_UEmisor VARCHAR(100) NOT NULL, 
  marca_Tiempo DATETIME NOT NULL,
  contenido_Mensaje TEXT,
- foreign key (id_UReceptor) references usuarios (id_Usuario) on delete cascade,
- foreign key (id_UEmisor) references usuarios (id_Usuario) on delete cascade
+ foreign key (id_UReceptor) references users (userId) on delete cascade,
+ foreign key (id_UEmisor) references users (userId) on delete cascade
  );
  
  CREATE TABLE ticket_Soporte (
  id_ticket INT PRIMARY KEY NOT NULL,
- id_RUsuario INT NOT NULL,
+ id_RUsuario VARCHAR(100) NOT NULL,
  categoria_Problema ENUM ('tecnico', 'funcional', 'bug', 'otra categoria'), /*Podrian ser otros */
  archivos_Puebras TEXT,
  estado_Ticket ENUM ('abierto', 'cerrado', ' en proceso', 'deconocido'),
  resolucion_Ticket TEXT,
- foreign key (id_RUsuario) references usuarios (id_Usuario) on delete cascade
+ foreign key (id_RUsuario) references users (userId) on delete cascade
  );
 
 DROP DATABASE webcursos;
