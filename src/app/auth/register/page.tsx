@@ -101,7 +101,7 @@ export default function RegisterPage() {
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
-  const handleSubmit = (formData: FormData) => {
+  const handleSubmit = async (formData: FormData) => {
     setTouched({
       username: true,
       email: true,
@@ -113,7 +113,11 @@ export default function RegisterPage() {
       return;
     }
 
-    return SignUp(formData);
+    const signUpSuccesfully = await SignUp(formData);
+
+    if (signUpSuccesfully.status == 200) {
+      alert("Registro exitoso");
+    }
   };
 
   return (

@@ -1,82 +1,49 @@
-export default function Login() {
+// working on the validations - Luis MPP
+
+"use client";
+
+import { LogIn } from "@/app/actions/auth";
+
+export default function RegisterPage() {
+  const handleSubmit = (formData: FormData) => {
+    LogIn(formData);
+  };
+
   return (
-    <>
-      {/*
-      This example requires updating your template:
-
-      ```
-      <html class="h-full bg-white">
-      <body class="h-full">
-      ```
-    */}
-      <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <h2 className="text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-            Iniciar Sesión
-          </h2>
+    <div className="h-[calc(100vh-7rem)] flex justify-center items-center">
+      <form action={handleSubmit} className="w-1/4">
+        <h1 className="font-bold text-slate-300 text-4xl mb-4 text-center">
+          Log In
+        </h1>
+        <div>
+          <label htmlFor="username" className="text-white mb-2 text-sm ">
+            Username
+          </label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            className="p-3 mb-2 rounded bg-slate-900 text-slate-300 w-full"
+          />
         </div>
-
-        <div className="mt-5 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form action="#" method="POST" className="space-y-6">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm/6 font-medium text-gray-900"
-              >
-                Email address
-              </label>
-              <div className="mt-2">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="block text-sm/6 font-medium text-gray-900"
-                >
-                  Password
-                </label>
-                <div className="text-sm">
-                  <a
-                    href="#"
-                    className="font-semibold text-indigo-600 hover:text-indigo-500"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
-              </div>
-              <div className="mt-2">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  autoComplete="current-password"
-                  className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                />
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Sign in
-              </button>
-            </div>
-          </form>
+        <div>
+          <label htmlFor="password" className="text-white mb-2 text-sm ">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            className="p-3 mb-2 rounded bg-slate-900 text-slate-300 w-full"
+          />
         </div>
-      </div>
-    </>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white p-3 my-4 w-full rounded-lg font-bold"
+        >
+          Log In
+        </button>
+      </form>
+    </div>
   );
 }

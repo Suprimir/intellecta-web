@@ -12,7 +12,7 @@ CREATE TABLE categorias (
 id_Categoria INT PRIMARY KEY NOT NULL,
 descripcion_Categoria VARCHAR(25)
 );
-select * from users;
+
 CREATE TABLE cursos (
 id_Curso INT PRIMARY KEY NOT NULL, 
 nombre_Curso VARCHAR(50) NOT NULL,
@@ -57,4 +57,3 @@ foreign key (id_Categoria) references categorias (id_Categoria) on delete cascad
 
 DROP DATABASE webcursos;
 
-SELECT * FROM users;
