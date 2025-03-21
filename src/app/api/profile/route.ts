@@ -1,3 +1,5 @@
+// Este endpoint descifra la token en el payload { uuid, username, email } y retorna esta informacion - Luis
+
 import { verify } from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 

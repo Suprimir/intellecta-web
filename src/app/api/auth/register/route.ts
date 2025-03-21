@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     const hashedPassword = bcrytp.hashSync(password, 10);
 
     const result: RequestBody = await pool.query("INSERT INTO users SET ?", {
-      userID: userUUID,
+      user_ID: userUUID,
       username,
       email,
       password: hashedPassword,
