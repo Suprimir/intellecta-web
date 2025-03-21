@@ -39,6 +39,6 @@ export async function LogIn(formData: FormData) {
   console.log(response);
 
   if (response.ok) {
-    redirect("/profile");
+    redirect("/dashboard");
   }
 }

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
   try {
@@ -20,6 +19,7 @@ export async function POST(request: Request) {
         const token = jwt.sign(
           {
             exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
+            uuid: result[0].userID,
             username,
             email: result[0].email,
           },
