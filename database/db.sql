@@ -1,59 +1,60 @@
-CREATE DATABASE webcursos;
-use webcursos;
+CREATE DATABASE intellecta_database;
+USE intellecta_database;
+
 CREATE TABLE users (
- userID VARCHAR(100) PRIMARY KEY NOT NULL, 
+ user_ID VARCHAR(100) PRIMARY KEY NOT NULL, 
  username VARCHAR(60) NOT NULL UNIQUE,
- email VARCHAR(70) NOT NULL UNIQUE UNIQUE,
+ email VARCHAR(70) NOT NULL UNIQUE,
  password VARCHAR(200) NOT NULL,
- rol ENUM ('alumno', 'instructor', 'admin') NOT NULL, /* Podrian ser otros roles */
- profilePicture TEXT /* Opcional */
- );
-CREATE TABLE categorias (
-id_Categoria INT PRIMARY KEY NOT NULL,
-descripcion_Categoria VARCHAR(25)
+ role ENUM ('student', 'instructor', 'admin') NOT NULL, 
+ profilePicture TEXT 
 );
 
-CREATE TABLE cursos (
-id_Curso INT PRIMARY KEY NOT NULL, 
-nombre_Curso VARCHAR(50) NOT NULL,
-descripcion__Curso TEXT,
-fecha_Curso DATETIME NOT NULL,
-duracion_Curso DATE,
-id_Instructor VARCHAR(100) NOT NULL,
-id_Categoria INT NOT NULL,
-material TEXT, /* Opcional */
-foreign key (id_Instructor) references users (userId) on delete cascade,
-foreign key (id_Categoria) references categorias (id_Categoria) on delete cascade
+CREATE TABLE categories (
+ category_ID INT PRIMARY KEY NOT NULL,
+ category_Description VARCHAR(25)
+);
+
+CREATE TABLE courses (
+ course_ID INT PRIMARY KEY NOT NULL, 
+ course_Name VARCHAR(50) NOT NULL,
+ course_Description TEXT,
+ course_Date DATETIME NOT NULL,
+ course_Duration DATE,
+ instructor_ID VARCHAR(100) NOT NULL,
+ category_ID INT NOT NULL,
+ material TEXT, 
+ foreign key (instructor_ID) references users (user_ID) on delete cascade,
+ foreign key (category_ID) references categories (category_ID) on delete cascade
 );
  
- CREATE TABLE contenidos (
- id_Contenidos INT PRIMARY KEY NOT NULL, 
- id_Curso INT NOT NULL,
- descripcion_Contenido TEXT,
- ruta_Docuemnto TEXT, /* RUTA DONDE SE ENCUENTRA ALOJADO EL DOCUMENTO */
- puntuacion_Contenido DECIMAL(5,2),
- foreign key (id_Curso) references cursos (id_Curso) on delete cascade
- );
+CREATE TABLE contents (
+ content_ID INT PRIMARY KEY NOT NULL, 
+ course_ID INT NOT NULL,
+ content_Description TEXT,
+ document_Path TEXT, 
+ content_Rating DECIMAL(5,2),
+ foreign key (course_ID) references courses (course_ID) on delete cascade
+);
  
- CREATE TABLE mensajes ( 
- id_Mensajes INT PRIMARY KEY NOT NULL, 
- id_UReceptor VARCHAR(100) NOT NULL, 
- id_UEmisor VARCHAR(100) NOT NULL, 
- marca_Tiempo DATETIME NOT NULL,
- contenido_Mensaje TEXT,
- foreign key (id_UReceptor) references users (userId) on delete cascade,
- foreign key (id_UEmisor) references users (userId) on delete cascade
- );
+CREATE TABLE messages ( 
+ message_ID INT PRIMARY KEY NOT NULL, 
+ receiver_User_ID VARCHAR(100) NOT NULL, 
+ sender_User_ID VARCHAR(100) NOT NULL, 
+ timestamp DATETIME NOT NULL,
+ message_Content TEXT,
+ foreign key (receiver_User_ID) references users (user_ID) on delete cascade,
+ foreign key (sender_User_ID) references users (user_ID) on delete cascade
+);
  
- CREATE TABLE ticket_Soporte (
- id_ticket INT PRIMARY KEY NOT NULL,
- id_RUsuario VARCHAR(100) NOT NULL,
- categoria_Problema ENUM ('tecnico', 'funcional', 'bug', 'otra categoria'), /*Podrian ser otros */
- archivos_Puebras TEXT,
- estado_Ticket ENUM ('abierto', 'cerrado', ' en proceso', 'deconocido'),
- resolucion_Ticket TEXT,
- foreign key (id_RUsuario) references users (userId) on delete cascade
- );
+CREATE TABLE support_Tickets (
+ ticket_ID INT PRIMARY KEY NOT NULL,
+ user_R_ID VARCHAR(100) NOT NULL,
+ problem_Category ENUM ('technical', 'functional', 'bug', 'other category'), 
+ proof_Files TEXT,
+ ticket_Status ENUM ('open', 'closed', 'in process', 'unknown'),
+ ticket_Resolution TEXT,
+ foreign key (user_R_ID) references users (user_ID) on delete cascade
+);
 
-DROP DATABASE webcursos;
-
+DROP DATABASE intellecta_database;
