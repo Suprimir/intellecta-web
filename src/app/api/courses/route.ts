@@ -6,16 +6,12 @@ type RequestBody = {
   affectedRows: number;
 };
 
-// deprecated (se uso con tabla de ejemplo no la actual)
-
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const result = await pool.query("SELECT * FROM cursos");
-
+    const result = await pool.query("SELECT * FROM courses");
     return NextResponse.json(result);
   } catch (error: unknown) {
     console.log(error);
-
     return NextResponse.json(
       {
         message: (error as Error).message,
@@ -29,23 +25,19 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { name, description } = await request.json();
+    const data = await request.json();
 
-    const result: RequestBody = await pool.query("INSERT INTO cursos SET ?", {
-      name,
-      description,
-    });
-
-    console.log(result);
+    const result: RequestBody = await pool.query(
+      "INSERT INTO courses SET ?",
+      data
+    );
 
     return NextResponse.json({
-      name,
-      description,
-      id: result.insertId,
+      message: "Curso creado exitosamente",
+      courseId: result.insertId,
     });
   } catch (error: unknown) {
     console.log(error);
-
     return NextResponse.json(
       {
         message: (error as Error).message,

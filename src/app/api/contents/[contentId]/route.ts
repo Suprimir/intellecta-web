@@ -6,26 +6,24 @@ type RequestBody = {
   affectedRows: number;
 };
 
-interface Courses {
+interface Contents {
+  content_ID: number;
   course_ID: number;
-  course_Name: string;
-  course_Date: string;
-  course_Duration: Date;
-  instructor_ID: number;
-  category_ID: number;
-  material: string;
+  content_Description: string;
+  document_Path: string;
+  content_Rating: number;
 }
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ courseId: number }> }
+  { params }: { params: Promise<{ contentId: number }> }
 ) {
   try {
-    const { courseId } = await params;
+    const { contentId } = await params;
 
     const result = await pool.query(
-      "SELECT * FROM courses WHERE course_ID = ?",
-      courseId
+      "SELECT * FROM contents WHERE content_ID = ?",
+      contentId
     );
     return NextResponse.json(result);
   } catch (error: unknown) {
@@ -43,33 +41,33 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ courseId: number }> }
+  { params }: { params: Promise<{ contentId: number }> }
 ) {
   try {
     const data = await request.json();
-    const { courseId } = await params;
+    const { contentId } = await params;
 
     const result: RequestBody = await pool.query(
-      "UPDATE courses SET ? WHERE course_ID = ?",
-      [data, courseId]
+      "UPDATE contents SET ? WHERE content_ID = ?",
+      [data, contentId]
     );
 
     if (result.affectedRows == 0) {
       return NextResponse.json(
         {
-          message: "Curso no encontrado.",
+          message: "Contenido no encontrado.",
         },
         {
           status: 404,
         }
       );
     }
-    const [updatedCourse]: Courses[] = await pool.query(
-      "SELECT * FROM courses WHERE course_ID = ?",
-      courseId
+    const [updatedContent]: Contents[] = await pool.query(
+      "SELECT * FROM contents WHERE content_ID = ?",
+      contentId
     );
 
-    return NextResponse.json(updatedCourse);
+    return NextResponse.json(updatedContent);
   } catch (error: unknown) {
     console.log(error);
     return NextResponse.json(
@@ -85,20 +83,20 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ courseId: number }> }
+  { params }: { params: Promise<{ contentId: number }> }
 ) {
   try {
-    const { courseId } = await params;
+    const { contentId } = await params;
 
     const result: RequestBody = await pool.query(
-      "DELETE FROM courses WHERE course_ID = ?",
-      courseId
+      "DELETE FROM contents WHERE content_ID = ?",
+      contentId
     );
 
     if (result.affectedRows == 0) {
       return NextResponse.json(
         {
-          message: "Curso no encontrado.",
+          message: "Contenido no encontrado.",
         },
         {
           status: 404,

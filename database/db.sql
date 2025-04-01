@@ -11,12 +11,12 @@ CREATE TABLE users (
 );
 
 CREATE TABLE categories (
- category_ID INT PRIMARY KEY NOT NULL,
+ category_ID INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
  category_Description VARCHAR(25)
 );
 
 CREATE TABLE courses (
- course_ID INT PRIMARY KEY NOT NULL, 
+ course_ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
  course_Name VARCHAR(50) NOT NULL,
  course_Description TEXT,
  course_Date DATETIME NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE courses (
 );
  
 CREATE TABLE contents (
- content_ID INT PRIMARY KEY NOT NULL, 
+ content_ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
  course_ID INT NOT NULL,
  content_Description TEXT,
  document_Path TEXT, 
@@ -38,7 +38,7 @@ CREATE TABLE contents (
 );
  
 CREATE TABLE messages ( 
- message_ID INT PRIMARY KEY NOT NULL, 
+ message_ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
  receiver_User_ID VARCHAR(100) NOT NULL, 
  sender_User_ID VARCHAR(100) NOT NULL, 
  timestamp DATETIME NOT NULL,
@@ -58,3 +58,7 @@ CREATE TABLE support_Tickets (
 );
 
 DROP DATABASE intellecta_database;
+
+SELECT * FROM categories WHERE category_ID = 1;
+SELECT * FROM users;
+SELECT * FROM categories;
