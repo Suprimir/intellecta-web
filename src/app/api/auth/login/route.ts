@@ -13,13 +13,13 @@ export async function POST(request: Request) {
       role: "student" | "instructor" | "admin";
       profilePicture: string | null;
     }
-    
+
     const { username, password } = await request.json();
     const [result]: User[] = await pool.query(
-      "SELECT * FROM users WHERE username = ? OR email = ?",
+      "SELECT * FROM users WHERE username = ?",
       [username]
     );
-  
+
     if (result) {
       const isPasswordValid = bcrypt.compareSync(password, result.password);
 
@@ -30,6 +30,7 @@ export async function POST(request: Request) {
             uuid: result.user_ID,
             username,
             email: result.email,
+            rol: result.role,
           },
           "secret"
         );
@@ -66,6 +67,9 @@ export async function POST(request: Request) {
       );
     }
   } catch (error: unknown) {
-    return NextResponse.json({ message: (error as Error).message }, { status: 500 });
+    return NextResponse.json(
+      { message: (error as Error).message },
+      { status: 500 }
+    );
   }
 }

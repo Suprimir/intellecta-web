@@ -1,17 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
+import { verifyAuth } from "@/libs/auth";
 
 type RequestBody = {
   insertId: number;
   affectedRows: number;
 };
+
 interface Categories {
   category_ID: number;
   category_Description: string;
 }
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ categoryId: number }> }
 ) {
   try {
@@ -35,16 +37,18 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ categoryId: number }> }
 ) {
   try {
-    const data = await request.json();
     const { categoryId } = await params;
+
+    const searchParams = request.nextUrl.searchParams;
+    const categoryDescription = searchParams.get("description");
 
     const result: RequestBody = await pool.query(
       "UPDATE categories SET ? WHERE category_ID = ?",
-      [data, categoryId]
+      [{ category_Description: categoryDescription }, categoryId]
     );
 
     if (result.affectedRows == 0) {
@@ -77,11 +81,28 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ categoryId: number }> }
 ) {
   try {
     const { categoryId } = await params;
+
+    // Verifica que tienes los permisos suficientes usando la sessionToken
+    const data = await verifyAuth(request);
+
+    if (!data.ok) {
+      return data;
+    }
+
+    const { rol } = await data.json();
+    if (rol != "admin") {
+      return NextResponse.json(
+        {
+          message: "No tienes los permisos suficientes para hacer este cambio.",
+        },
+        { status: 403 }
+      );
+    }
 
     const result: RequestBody = await pool.query(
       "DELETE FROM categories WHERE category_ID = ?",

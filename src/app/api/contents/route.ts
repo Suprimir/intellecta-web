@@ -14,7 +14,7 @@ interface Contents {
   content_Rating: number;
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const result = await pool.query("SELECT * FROM contents");
     return NextResponse.json(result);

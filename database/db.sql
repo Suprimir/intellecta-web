@@ -48,7 +48,7 @@ CREATE TABLE messages (
 );
  
 CREATE TABLE support_Tickets (
- ticket_ID INT PRIMARY KEY NOT NULL,
+ ticket_ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
  user_R_ID VARCHAR(100) NOT NULL,
  problem_Category ENUM ('technical', 'functional', 'bug', 'other category'), 
  proof_Files TEXT,
@@ -62,3 +62,6 @@ DROP DATABASE intellecta_database;
 SELECT * FROM categories WHERE category_ID = 1;
 SELECT * FROM users;
 SELECT * FROM categories;
+SELECT * FROM courses;
+
+SELECT 1 FROM categories WHERE category_Description = "Skibidi";

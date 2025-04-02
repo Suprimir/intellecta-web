@@ -6,7 +6,7 @@ type RequestBody = {
   affectedRows: number;
 };
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const result = await pool.query("SELECT * FROM courses");
     return NextResponse.json(result);
