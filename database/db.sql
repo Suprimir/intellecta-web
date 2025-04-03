@@ -7,8 +7,16 @@ CREATE TABLE users (
  email VARCHAR(70) NOT NULL UNIQUE,
  password VARCHAR(200) NOT NULL,
  role ENUM ('student', 'instructor', 'admin') NOT NULL, 
- profilePicture TEXT 
+ profilePicture TEXT,
+ verified BOOLEAN NOT NULL
 );
+
+CREATE TABLE emailToken (
+    token_id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    expired_At DATE NOT NULL,
+    token VARCHAR(100) NOT NULL,
+    user_ID VARCHAR(100) NOT NULL REFERENCES users(user_ID)
+)
 
 CREATE TABLE categories (
  category_ID INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
@@ -19,7 +27,7 @@ CREATE TABLE courses (
  course_ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
  course_Name VARCHAR(50) NOT NULL,
  course_Description TEXT,
- course_Date DATETIME NOT NULL,
+ course_Date TIMESTAMP NOT NULL,
  course_Duration DATE,
  instructor_ID VARCHAR(100) NOT NULL,
  category_ID INT NOT NULL,

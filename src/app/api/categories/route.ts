@@ -71,7 +71,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Una vez verificado aqui se continua con la insercion de los datos en la BD
-
     const result: RequestBody = await pool.query(
       "INSERT INTO categories SET ?",
       {

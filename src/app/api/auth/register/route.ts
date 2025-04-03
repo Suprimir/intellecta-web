@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
 import bcrytp from "bcrypt";
+import { transporter } from "@/libs/mailService";
+import { getRandomValues, randomBytes, randomInt, randomUUID } from "crypto";
 
 type RequestBody = {
   insertId: number;
@@ -69,6 +71,26 @@ export async function POST(request: Request) {
       email: user.email,
       password: hashedPassword,
       role: user.role,
+      verified: 0,
+    });
+
+    const token = randomUUID();
+
+    const resultToken: RequestBody = await pool.query(
+      "INSERT INTO emailToken SET ?",
+      {
+        expired_At: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+        token,
+        user_ID: userUUID,
+      }
+    );
+
+    await transporter.sendMail({
+      from: '"Intellecta" <intellectawebapp@gmail.com>', // sender address
+      to: user.email,
+      subject: "Confirma tu Correo - Intellecta",
+      text: "Intellecta Web APP",
+      html: `<h1>Confirma tu Correo</h1><button><a href='localhost:3000/api/auth/verify?token=${token}'>Confirmar Email</a></button>`,
     });
 
     return NextResponse.json({
