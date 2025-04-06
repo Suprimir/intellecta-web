@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
 import bcrytp from "bcrypt";
-import { transporter } from "@/libs/mailService";
+import { SendMailConfirmation, transporter } from "@/libs/mailService";
 import { randomUUID } from "crypto";
 import { generateMailConfirmationHTML } from "@/components/MailConfirmation";
 
@@ -23,6 +23,7 @@ export async function POST(request: Request) {
   try {
     const user: User = await request.json();
 
+    // Verificamos que todos los campos necesarios estan.
     if (!user.username || !user.email || !user.password) {
       return NextResponse.json(
         { message: "Todos los campos son requeridos" },
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // Si el nombre de usuario es menor a 8 regresamos un error para avisar al usuario
     if (user.username.length < 8) {
       return NextResponse.json(
         { message: "El usuario debe tener mas de 8 caracteres." },
@@ -37,6 +39,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // Verificamos que el correo tengo un formato exacto
     if (!/\S+[@]+\S+[.]+\S+/.test(user.email)) {
       return NextResponse.json(
         { message: "El email esta en un formato incorrecto." },
@@ -44,6 +47,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // Verificamos que la contraseña tenga mas de 8 caracteres si no regresa error
     if (user.password.length < 8) {
       return NextResponse.json(
         { message: "La contraseña debe contener al menos 8 caracteres" },
@@ -66,7 +70,7 @@ export async function POST(request: Request) {
 
     const hashedPassword = bcrytp.hashSync(user.password, 10);
 
-    const result: RequestBody = await pool.query("INSERT INTO users SET ?", {
+    await pool.query("INSERT INTO users SET ?", {
       user_ID: userUUID,
       username: user.username,
       email: user.email,
@@ -86,15 +90,8 @@ export async function POST(request: Request) {
       }
     );
 
-    const emailHTML = generateMailConfirmationHTML(verifyToken);
-
-    await transporter.sendMail({
-      from: '"Intellecta" <intellectawebapp@gmail.com>',
-      to: user.email,
-      subject: "Confirma tu Correo - Intellecta",
-      text: "Intellecta Web APP",
-      html: emailHTML,
-    });
+    // Envia el correo de confirmacion
+    await SendMailConfirmation(user.email, verifyToken);
 
     return NextResponse.json({
       message: "Usuario registrado correctamente",
