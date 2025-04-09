@@ -1,6 +1,4 @@
-import { renderConfirmationEmail } from "@/utils/renderConfirmationEmail";
-import { userInput } from "@/utils/validateUser";
-
+import { renderConfirmationEmail } from "@/app/lib/email/renderEmail";
 const nodemailer = require("nodemailer");
 
 export const transporter = nodemailer.createTransport({
@@ -16,12 +14,16 @@ export const transporter = nodemailer.createTransport({
   },
 });
 
-export async function SendMailConfirmation(user: userInput, token: string) {
+export async function SendMailConfirmation(
+  username: string,
+  email: string,
+  verifyToken: string
+) {
   await transporter.sendMail({
     from: '"Intellecta" <intellectawebapp@gmail.com>',
-    to: user.email,
+    to: email,
     subject: "Confirma tu Correo - Intellecta",
     text: "Intellecta Web APP",
-    html: renderConfirmationEmail(user.username, user.email, token),
+    html: renderConfirmationEmail(username, email, verifyToken),
   });
 }

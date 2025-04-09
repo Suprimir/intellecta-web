@@ -1,5 +1,9 @@
+"use server";
+
 import { verify } from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
+
+const JWT_SECRET = process.env.JWT_SECRET || "";
 
 export async function POST(request: NextRequest) {
   const sessionToken = request.cookies.get("sessionToken")?.value;
@@ -9,7 +13,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    verify(sessionToken, "secret");
+    verify(sessionToken, JWT_SECRET);
     const response = NextResponse.json({
       message: "Cerraste sesion exitosamente.",
     });
@@ -24,6 +28,8 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error: unknown) {
+    console.error("Error en logout:", error);
+
     return NextResponse.json(
       { message: (error as Error).message },
       { status: 500 }

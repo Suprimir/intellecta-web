@@ -82,21 +82,21 @@ export async function PUT(
     }
 
     interface SupportTicket {
-        ticket_ID: number;
-        user_R_ID: string;
-        problem_Category: "technical" | "functional" | "bug" | "other category";
-        proof_Files: string | null;
-        ticket_Status: "open" | "closed" | "in process" | "unknown";
-        ticket_Resolution: string | null;
-      }
-      
-      const [updatedTicket]: SupportTicket[] = await pool.query(
-        "SELECT * FROM support_Tickets WHERE ticket_ID = ?",
-        ticketId
-      );
+      ticket_ID: number;
+      user_R_ID: string;
+      problem_Category: "technical" | "functional" | "bug" | "other category";
+      proof_Files: string | null;
+      ticket_Status: "open" | "closed" | "in process" | "unknown";
+      ticket_Resolution: string | null;
+    }
 
-      return NextResponse.json(updatedTicket);
-    } catch (error: unknown) {
+    const [updatedTicket]: SupportTicket[] = await pool.query(
+      "SELECT * FROM support_Tickets WHERE ticket_ID = ?",
+      ticketId
+    );
+
+    return NextResponse.json(updatedTicket);
+  } catch (error: unknown) {
     console.log(error);
     return NextResponse.json(
       {

@@ -13,11 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html className="h-full bg-white" lang="en">
-      <body className="h-full">
-        <NavBar />
-        {children}
-        </body>
+    <html className="h-full bg-white hydrated" lang="en">
+      <body className="h-full">{children}</body>
     </html>
   );
 }

@@ -1,3 +1,5 @@
+"use server";
+
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
 
@@ -15,6 +17,8 @@ export async function GET(request: NextRequest) {
       verifyToken
     );
 
+    pool.end();
+
     if (resultUserID.length > 0) {
       const userUUID = resultUserID[0]["user_ID"];
 
@@ -23,7 +27,11 @@ export async function GET(request: NextRequest) {
         userUUID
       );
 
+      pool.end();
+
       await pool.query("DELETE FROM emailToken WHERE user_ID = ?", userUUID);
+
+      pool.end();
 
       return NextResponse.json({
         message: "Has sido verificado correctamente",

@@ -1,4 +1,4 @@
--- Active: 1733150496575@@127.0.0.1@3306@intellecta_database
+-- Active: 1742011190350@@127.0.0.1@3306@intellecta_database
 CREATE DATABASE intellecta_database;
 USE intellecta_database;
 
