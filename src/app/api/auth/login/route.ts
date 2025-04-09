@@ -1,28 +1,24 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { userInput } from "@/app/utils/validateUser";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    interface User {
-      user_ID: string;
-      username: string;
-      email: string;
-      password: string;
-      role: "student" | "instructor" | "admin";
-      profilePicture: string | null;
-    }
-
     const { username, password } = await request.json();
-    const [result]: User[] = await pool.query(
+
+    // Obtenemos los datos del usuario
+    const [result]: userInput[] = await pool.query(
       "SELECT * FROM users WHERE username = ?",
       [username]
     );
 
     if (result) {
+      // Verificamos que las contraseñas coincidan
       const isPasswordValid = bcrypt.compareSync(password, result.password);
 
+      // Al validar creamos una cookie de session
       if (isPasswordValid) {
         const token = jwt.sign(
           {
@@ -35,6 +31,7 @@ export async function POST(request: Request) {
           "secret"
         );
 
+        // Creamos nuestro response con un mensaje de confirmacion del login y con la cookie de session
         const response = NextResponse.json({ message: "Login Succes." });
 
         response.cookies.set("sessionToken", token, {

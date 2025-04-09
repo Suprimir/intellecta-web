@@ -6,7 +6,7 @@ type RequestBody = {
   affectedRows: number;
 };
 
-interface Courses {
+class Courses {
   course_ID: number;
   course_Name: string;
   course_Date: string;
@@ -14,6 +14,24 @@ interface Courses {
   instructor_ID: number;
   category_ID: number;
   material: string;
+
+  constructor(
+    course_ID: number,
+    course_Name: string,
+    course_Date: string,
+    course_Duration: Date,
+    instructor_ID: number,
+    category_ID: number,
+    material: string
+  ) {
+    this.course_ID = course_ID;
+    this.course_Name = course_Name;
+    this.course_Date = course_Date;
+    this.course_Duration = course_Duration;
+    this.instructor_ID = instructor_ID;
+    this.category_ID = category_ID;
+    this.material = material;
+  }
 }
 
 export async function GET(

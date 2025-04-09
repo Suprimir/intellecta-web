@@ -1,61 +1,29 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
 import bcrytp from "bcrypt";
-import { SendMailConfirmation, transporter } from "@/libs/mailService";
+import { SendMailConfirmation } from "@/libs/mailService";
 import { randomUUID } from "crypto";
-import { generateMailConfirmationHTML } from "@/components/MailConfirmation";
-
-type RequestBody = {
-  insertId: number;
-  affectedRows: number;
-};
-
-interface User {
-  user_ID: string;
-  username: string;
-  email: string;
-  password: string;
-  role: "student" | "instructor" | "admin";
-  profilePicture: string | null;
-}
+import { userInput, validateUser } from "@/app/utils/validateUser";
 
 export async function POST(request: Request) {
   try {
-    const user: User = await request.json();
+    const user: userInput = await request.json();
 
-    // Verificamos que todos los campos necesarios estan.
-    if (!user.username || !user.email || !user.password) {
+    // Validaciones de usuario
+    const validationErrors = validateUser(user);
+
+    if (validationErrors.length > 0) {
       return NextResponse.json(
-        { message: "Todos los campos son requeridos" },
-        { status: 400 }
+        validationErrors.map((error) => ({
+          field: error.field,
+          message: error.messsage,
+        })),
+        { status: 409 }
       );
     }
 
-    // Si el nombre de usuario es menor a 8 regresamos un error para avisar al usuario
-    if (user.username.length < 8) {
-      return NextResponse.json(
-        { message: "El usuario debe tener mas de 8 caracteres." },
-        { status: 400 }
-      );
-    }
-
-    // Verificamos que el correo tengo un formato exacto
-    if (!/\S+[@]+\S+[.]+\S+/.test(user.email)) {
-      return NextResponse.json(
-        { message: "El email esta en un formato incorrecto." },
-        { status: 400 }
-      );
-    }
-
-    // Verificamos que la contraseña tenga mas de 8 caracteres si no regresa error
-    if (user.password.length < 8) {
-      return NextResponse.json(
-        { message: "La contraseña debe contener al menos 8 caracteres" },
-        { status: 400 }
-      );
-    }
-
-    const [userAlreadyExist]: User[] = await pool.query(
+    // Verificamos si ya existe un usuario
+    const [userAlreadyExist]: userInput[] = await pool.query(
       "SELECT * FROM users WHERE username = ? OR email = ?",
       [user.username, user.email]
     );
@@ -66,10 +34,12 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
-    const userUUID = crypto.randomUUID();
 
+    // Generamos UUID unica y password hasheado para seguridad
+    const userUUID = crypto.randomUUID();
     const hashedPassword = bcrytp.hashSync(user.password, 10);
 
+    // Realizamos la insercion de datos
     await pool.query("INSERT INTO users SET ?", {
       user_ID: userUUID,
       username: user.username,
@@ -79,16 +49,14 @@ export async function POST(request: Request) {
       verified: 0,
     });
 
+    // Aqui realizamos ya el proceso de confirmacion probablemente refactorizar esto.
     const verifyToken = randomUUID();
 
-    const resultToken: RequestBody = await pool.query(
-      "INSERT INTO emailToken SET ?",
-      {
-        expired_At: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-        token: verifyToken,
-        user_ID: userUUID,
-      }
-    );
+    await pool.query("INSERT INTO emailToken SET ?", {
+      expired_At: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+      token: verifyToken,
+      user_ID: userUUID,
+    });
 
     // Envia el correo de confirmacion
     await SendMailConfirmation(user.email, verifyToken);

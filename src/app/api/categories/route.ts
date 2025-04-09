@@ -17,9 +17,12 @@ export async function GET() {
     const result = await pool.query("SELECT * FROM categories");
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.log(error);
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    return NextResponse.json(
+      { message: (error as Error).message },
+      { status: 500 }
+    );
   }
 }
 
