@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
+import { validatePermissions } from "@/utils/validatePermissions";
 
 type RequestBody = {
   insertId: number;
@@ -35,7 +36,7 @@ class Courses {
 }
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ courseId: number }> }
 ) {
   try {
@@ -60,17 +61,29 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ courseId: number }> }
 ) {
   try {
     const data = await request.json();
     const { courseId } = await params;
 
+    // Verificar que el usuario tenga permisos para crear cursos
+    if (!(await validatePermissions(request, true))) {
+      return NextResponse.json(
+        {
+          message: "No tienes los permisos suficientes para hacer este cambio.",
+        },
+        { status: 403 }
+      );
+    }
+
     const result: RequestBody = await pool.query(
       "UPDATE courses SET ? WHERE course_ID = ?",
       [data, courseId]
     );
+
+    pool.end();
 
     if (result.affectedRows == 0) {
       return NextResponse.json(
@@ -82,10 +95,12 @@ export async function PUT(
         }
       );
     }
-    const [updatedCourse]: Courses[] = await pool.query(
+    const updatedCourse: Courses[] = await pool.query(
       "SELECT * FROM courses WHERE course_ID = ?",
       courseId
     );
+
+    pool.end();
 
     return NextResponse.json(updatedCourse);
   } catch (error: unknown) {
@@ -102,11 +117,21 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ courseId: number }> }
 ) {
   try {
     const { courseId } = await params;
+
+    // Verificar que el usuario tenga permisos para crear cursos
+    if (!(await validatePermissions(request, true))) {
+      return NextResponse.json(
+        {
+          message: "No tienes los permisos suficientes para hacer este cambio.",
+        },
+        { status: 403 }
+      );
+    }
 
     const result: RequestBody = await pool.query(
       "DELETE FROM courses WHERE course_ID = ?",

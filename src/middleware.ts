@@ -19,10 +19,8 @@ export async function middleware(request: NextRequest) {
     console.log(error.message);
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
-
-  return NextResponse.next();
 }
 
 export const config = {
-  matcher: "/dashboard",
+  matcher: ["/dashboard"],
 };

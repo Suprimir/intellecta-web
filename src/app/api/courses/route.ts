@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
 import { verifyAuth } from "@/libs/auth";
+import { courseInput, validateCourses } from "@/utils/validateCourses";
+import { validatePermissions } from "@/utils/validatePermissions";
 
 type RequestBody = {
   insertId: number;
@@ -26,24 +28,10 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-
-    const courseName = searchParams.get("name");
-    const courseDescription = searchParams.get("description") || "";
-    const courseDate = searchParams.get("date") || new Date(Date.now());
-    const courseDuration = searchParams.get("duration");
-    const instructorUuid = searchParams.get("instructorUuid");
-    const categoryId = searchParams.get("category");
+    const course: courseInput = await request.json();
 
     // Verificar que el usuario tenga permisos para crear cursos
-    const data = await verifyAuth(request);
-
-    if (!data.ok) {
-      return data;
-    }
-
-    const { rol } = await data.json();
-    if (rol != "admin") {
+    if (!(await validatePermissions(request, true))) {
       return NextResponse.json(
         {
           message: "No tienes los permisos suficientes para hacer este cambio.",
@@ -53,22 +41,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica que los valores obligatorios tengan contenido
-    if (!courseName) {
+    if (!course.name) {
       return NextResponse.json(
         { message: "Falta el valor de name del curso." },
         { status: 400 }
       );
-    } else if (!courseDuration) {
+    } else if (!course.duration) {
       return NextResponse.json(
         { message: "Falta el valor de duration del curso." },
         { status: 400 }
       );
-    } else if (!instructorUuid) {
+    } else if (!course.uuid) {
       return NextResponse.json(
         { message: "Falta el valor de instructorUuid del curso." },
         { status: 400 }
       );
-    } else if (!categoryId) {
+    } else if (!course.category_ID) {
       return NextResponse.json(
         { message: "Falta el valor de category del curso." },
         { status: 400 }
@@ -76,29 +64,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica que no exista un curso con el mismo nombre
-    const alreadyExist: RequestBody[] = await pool.query(
-      "SELECT 1 FROM courses WHERE course_Name = ?",
-      courseName
-    );
+    const courseValidationErrors = await validateCourses(course);
 
-    if (alreadyExist.length > 0) {
+    if (courseValidationErrors.length > 0) {
       return NextResponse.json(
-        {
-          message: "Ya existe una categoria con ese nombre.",
-        },
+        courseValidationErrors.map((error) => ({
+          field: error.field,
+          message: error.message,
+        })),
         { status: 409 }
       );
     }
 
     // Despues de las verificaciones realiza el insert a la BD
     const result: RequestBody = await pool.query("INSERT INTO courses SET ?", {
-      course_Name: courseName,
-      course_Description: courseDescription,
-      course_Date: courseDate,
-      course_Duration: courseDuration,
-      instructor_ID: instructorUuid,
-      category_ID: categoryId,
+      course_Name: course.name,
+      course_Description: course.description,
+      course_Date: course.date,
+      course_Duration: course.duration,
+      instructor_ID: course.uuid,
+      category_ID: course.category_ID,
     });
+
+    pool.end();
 
     return NextResponse.json({
       message: "Curso creado exitosamente",

@@ -1,4 +1,4 @@
--- Active: 1742011190350@@127.0.0.1@3306@intellecta_database
+-- Active: 1733150496575@@127.0.0.1@3306@intellecta_database
 CREATE DATABASE intellecta_database;
 USE intellecta_database;
 
@@ -28,8 +28,8 @@ CREATE TABLE courses (
  course_ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
  course_Name VARCHAR(50) NOT NULL,
  course_Description TEXT,
- course_Date TIMESTAMP NOT NULL,
- course_Duration DATE,
+ course_Date DATE NOT NULL,
+ course_Duration DOUBLE,
  instructor_ID VARCHAR(100) NOT NULL,
  category_ID INT NOT NULL,
  material TEXT, 
@@ -40,6 +40,7 @@ CREATE TABLE courses (
 CREATE TABLE contents (
  content_ID INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
  course_ID INT NOT NULL,
+ content_Title VARCHAR(100),
  content_Description TEXT,
  document_Path TEXT, 
  content_Rating DECIMAL(5,2),
@@ -67,6 +68,9 @@ CREATE TABLE support_Tickets (
 );
 
 DROP DATABASE intellecta_database;
+
+USE intellecta_database;
+
 
 SELECT * FROM categories WHERE category_ID = 1;
 SELECT * FROM users;

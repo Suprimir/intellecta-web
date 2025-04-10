@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
+import { validatePermissions } from "@/utils/validatePermissions";
 
 type RequestBody = {
   insertId: number;
@@ -15,7 +16,7 @@ interface Contents {
 }
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ contentId: number }> }
 ) {
   try {
@@ -25,6 +26,9 @@ export async function GET(
       "SELECT * FROM contents WHERE content_ID = ?",
       contentId
     );
+
+    pool.end();
+
     return NextResponse.json(result);
   } catch (error: unknown) {
     console.log(error);
@@ -40,17 +44,28 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ contentId: number }> }
 ) {
   try {
     const data = await request.json();
     const { contentId } = await params;
 
+    if (await validatePermissions(request, true)) {
+      return NextResponse.json(
+        {
+          message: "No tienes los permisos suficientes para hacer este cambio.",
+        },
+        { status: 403 }
+      );
+    }
+
     const result: RequestBody = await pool.query(
       "UPDATE contents SET ? WHERE content_ID = ?",
       [data, contentId]
     );
+
+    pool.end();
 
     if (result.affectedRows == 0) {
       return NextResponse.json(
@@ -67,6 +82,8 @@ export async function PUT(
       contentId
     );
 
+    pool.end();
+
     return NextResponse.json(updatedContent);
   } catch (error: unknown) {
     console.log(error);
@@ -82,16 +99,27 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ contentId: number }> }
 ) {
   try {
     const { contentId } = await params;
 
+    if (await validatePermissions(request, true)) {
+      return NextResponse.json(
+        {
+          message: "No tienes los permisos suficientes para hacer este cambio.",
+        },
+        { status: 403 }
+      );
+    }
+
     const result: RequestBody = await pool.query(
       "DELETE FROM contents WHERE content_ID = ?",
       contentId
     );
+
+    pool.end();
 
     if (result.affectedRows == 0) {
       return NextResponse.json(
@@ -104,7 +132,7 @@ export async function DELETE(
       );
     }
 
-    return new Response(null, { status: 204 });
+    return NextResponse.json(null, { status: 204 });
   } catch (error: unknown) {
     console.log(error);
 

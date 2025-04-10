@@ -1,22 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
+import { validatePermissions } from "@/utils/validatePermissions";
+import { contentInput, validateContents } from "@/utils/validateContents";
 
 type RequestBody = {
   insertId: number;
   affectedRows: number;
 };
 
-interface Contents {
-  content_ID: number;
-  course_ID: number;
-  content_Description: string;
-  document_Path: string;
-  content_Rating: number;
-}
-
 export async function GET() {
   try {
     const result = await pool.query("SELECT * FROM contents");
+
+    pool.end();
     return NextResponse.json(result);
   } catch (error: unknown) {
     console.log(error);
@@ -31,14 +27,37 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const data = await request.json();
+    const content: contentInput = await request.json();
+
+    if (await validatePermissions(request, true)) {
+      return NextResponse.json(
+        {
+          message: "No tienes los permisos suficientes para hacer este cambio.",
+        },
+        { status: 403 }
+      );
+    }
+
+    const contentValidationErrors = await validateContents(content);
+
+    if (contentValidationErrors.length > 0) {
+      return NextResponse.json(
+        contentValidationErrors.map((error) => ({
+          field: error.field,
+          message: error.message,
+        })),
+        { status: 409 }
+      );
+    }
 
     const result: RequestBody = await pool.query(
       "INSERT INTO contents SET ?",
-      data
+      content
     );
+
+    pool.end();
 
     return NextResponse.json({
       message: "Contenido creado exitosamente",

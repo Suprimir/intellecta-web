@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const user: userInput = await request.json();
 
     // Validaciones de usuario
-    const validationErrors = validateUser(user);
+    const validationErrors = await validateUser(user);
     if (validationErrors.length > 0) {
       return NextResponse.json(
         validationErrors.map((error) => ({
@@ -65,12 +65,13 @@ export async function POST(request: Request) {
         user_ID: userUUID,
       });
 
-      await pool.query("COMMIT");
-
       await pool.end();
 
       // Envia el correo de confirmación
       await SendMailConfirmation(user, verifyToken);
+
+      await pool.query("COMMIT");
+      await pool.end();
 
       return NextResponse.json(
         {

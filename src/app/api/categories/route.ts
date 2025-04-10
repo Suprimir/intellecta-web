@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
 import { verifyAuth } from "@/libs/auth";
+import { validatePermissions } from "@/utils/validatePermissions";
 
 type RequestBody = {
   insertId: number;
@@ -31,15 +32,7 @@ export async function POST(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const categoryDescription = searchParams.get("description");
 
-    // Verifica que el rol del usuario sea de administrador
-    const data = await verifyAuth(request);
-
-    if (!data.ok) {
-      return data;
-    }
-
-    const { rol } = await data.json();
-    if (rol != "admin") {
+    if (!(await validatePermissions(request, true))) {
       return NextResponse.json(
         {
           message: "No tienes los permisos suficientes para hacer este cambio.",

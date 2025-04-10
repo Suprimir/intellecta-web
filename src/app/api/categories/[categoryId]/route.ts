@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
+import { validatePermissions } from "@/utils/validatePermissions";
 import { verifyAuth } from "@/libs/auth";
 
 type RequestBody = {
@@ -46,6 +47,15 @@ export async function PUT(
     const searchParams = request.nextUrl.searchParams;
     const categoryDescription = searchParams.get("description");
 
+    if (!(await validatePermissions(request, true))) {
+      return NextResponse.json(
+        {
+          message: "No tienes los permisos suficientes para hacer este cambio.",
+        },
+        { status: 403 }
+      );
+    }
+
     const result: RequestBody = await pool.query(
       "UPDATE categories SET ? WHERE category_ID = ?",
       [{ category_Description: categoryDescription }, categoryId]
@@ -88,14 +98,7 @@ export async function DELETE(
     const { categoryId } = await params;
 
     // Verifica que tienes los permisos suficientes usando la sessionToken
-    const data = await verifyAuth(request);
-
-    if (!data.ok) {
-      return data;
-    }
-
-    const { rol } = await data.json();
-    if (rol != "admin") {
+    if (await validatePermissions(request, true)) {
       return NextResponse.json(
         {
           message: "No tienes los permisos suficientes para hacer este cambio.",

@@ -1,5 +1,9 @@
+"use server";
+
 import { verify } from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
+
+const JWT_SECRET = process.env.JWT_SECRET || "";
 
 export async function verifyAuth(request: NextRequest) {
   try {
@@ -11,8 +15,7 @@ export async function verifyAuth(request: NextRequest) {
       );
     }
 
-    const user = verify(sessionToken, "secret");
-
+    const user = verify(sessionToken, JWT_SECRET);
     return NextResponse.json(user);
   } catch (error: unknown) {
     return NextResponse.json(

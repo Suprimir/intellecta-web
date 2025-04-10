@@ -1,3 +1,5 @@
+"use server";
+
 export interface userInput {
   user_ID: string;
   username: string;
@@ -12,7 +14,7 @@ export interface userErrors {
   messsage: string;
 }
 
-export function validateUser(data: userInput) {
+export async function validateUser(data: userInput) {
   const errors: userErrors[] = [];
 
   // Verificamos que todos los campos necesarios estan.

@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     await pool.end();
 
-    if (users) {
+    if (!users) {
       return NextResponse.json(
         { message: "Credenciales inválidas" },
         { status: 401 }
