@@ -32,7 +32,6 @@ CREATE TABLE courses (
  course_Duration DOUBLE,
  instructor_ID VARCHAR(100) NOT NULL,
  category_ID INT NOT NULL,
- material TEXT, 
  foreign key (instructor_ID) references users (user_ID) on delete cascade,
  foreign key (category_ID) references categories (category_ID) on delete cascade
 );
@@ -43,7 +42,6 @@ CREATE TABLE contents (
  content_Title VARCHAR(100),
  content_Description TEXT,
  document_Path TEXT, 
- content_Rating DECIMAL(5,2),
  foreign key (course_ID) references courses (course_ID) on delete cascade
 );
  

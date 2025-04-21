@@ -1,15 +1,36 @@
+"use client";
+
 import CourseCard from "@/components/CourseCard";
+import { courseInput } from "@/utils/validateCourses";
+import { useState } from "react";
 
 export default function Admin() {
+  const [courses, setCourses] = useState<courseInput[]>([]);
+
+  async function getCourses() {
+    const response = await fetch("/api/courses");
+    const coursesJson = await response.json();
+    courses.map((course) => console.log(course.course_Name));
+    setCourses(coursesJson);
+  }
+
   return (
     <div>
       <h1>ADMIN PANEL FOR DEBUGGING</h1>
-      <button className="bg-amber-400">VER CURSOS</button>
-      <CourseCard
-        img="https://imgs.search.brave.com/TG6Wf6OW5KG0D6xdmhYOU-yzyejyVu7ItVv0o91YaJg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/Z29kYWRkeS5jb20v/cmVzb3VyY2VzL2xh/dGFtL3dwLWNvbnRl/bnQvdXBsb2Fkcy9z/aXRlcy80LzIwMjQv/MDMvcG9ydGFkYV9x/dWUtZXMtamF2YXNj/cmlwdC5qcGc_c2l6/ZT0zODQweDA"
-        title="XDDD"
-        description="EL PEPE TILIN"
-      ></CourseCard>
+      <button className="bg-amber-400" onClick={() => getCourses()}>
+        VER CURSOS
+      </button>
+      {courses.length === 0 ? (
+        <p>No hay elementos</p>
+      ) : (
+        courses.map((course) => (
+          <CourseCard
+            title={course.course_Name}
+            description={course.course_Description}
+            key={course.course_ID}
+          ></CourseCard>
+        ))
+      )}
     </div>
   );
 }
