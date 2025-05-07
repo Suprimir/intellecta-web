@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SignUp } from "@/app/actions/auth";
+import { SignUp } from "@/actions/auth";
 
 interface TouchedFields {
   username: boolean;

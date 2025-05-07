@@ -1,140 +1,232 @@
+"use client";
+
+import { useState } from "react";
+import { redirect } from "next/navigation";
+import Image from "next/image";
+import "../styles/NavBar.css";
+import {
+  CommandLineIcon,
+  PaintBrushIcon,
+  BriefcaseIcon,
+  BookOpenIcon,
+  LanguageIcon,
+  Bars3Icon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { ChevronDownIcon, EyeIcon } from "@heroicons/react/20/solid";
+import Hyperlink from "./common/Hyperlink";
+import Input from "./common/Input";
+
+const products = [
+  {
+    name: "Tecnología y Programación",
+    description: "Crea software y domina herramientas digitales.",
+    href: "#",
+    icon: CommandLineIcon,
+  },
+  {
+    name: "Arte y Diseño",
+    description: "Desarrolla tu lado creativo.",
+    href: "#",
+    icon: PaintBrushIcon,
+  },
+  {
+    name: "Negocios y Emprendimiento",
+    description: "Aprende a emprender y liderar.",
+    href: "#",
+    icon: BriefcaseIcon,
+  },
+  {
+    name: "Educación y Desarrollo Personal",
+    description: "Mejora tus habilidades y crecimiento personal.",
+    href: "#",
+    icon: BookOpenIcon,
+  },
+  {
+    name: "Idiomas",
+    description: "Aprende o mejora un idioma.",
+    href: "#",
+    icon: LanguageIcon,
+  },
+];
+const callsToAction = [
+  { name: "Ver todos los cursos", href: "#", icon: EyeIcon },
+];
+
 export default function NavBar() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
-    <nav className="bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-700">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <a href="#" className="flex items-center space-x-3 rtl:space-x-reverse">
-          <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-            Flowbite
-          </span>
-        </a>
-        <button
-          data-collapse-toggle="navbar-dropdown"
-          type="button"
-          className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-          aria-controls="navbar-dropdown"
-          aria-expanded="false"
-        >
-          <span className="sr-only">Open main menu</span>
-          <svg
-            className="w-5 h-5"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 17 14"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M1 1h15M1 7h15M1 13h15"
+    <header className="bg-white">
+      <nav
+        aria-label="Global"
+        className="mx-auto flex  max-w-[90%] items-center justify-between p-4 lg:px-8"
+      >
+        <div className="flex lg:flex-1">
+          <a href="#" className="-m-1.5">
+            <span className="sr-only">Your Company</span>
+            <Image
+              src={"/intellecta-logo.svg"}
+              alt=""
+              width="128"
+              height="64"
             />
-          </svg>
-        </button>
-        <div className="hidden w-full md:block md:w-auto" id="navbar-dropdown">
-          <ul className="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-            <li>
-              <a
-                href="#"
-                className="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500 dark:bg-blue-600 md:dark:bg-transparent"
-                aria-current="page"
-              >
-                Home
-              </a>
-            </li>
-            <li>
-              <button
-                id="dropdownNavbarLink"
-                data-dropdown-toggle="dropdownNavbar"
-                className="flex items-center justify-between w-full py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 md:w-auto dark:text-white md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent"
-              >
-                Dropdown{" "}
-                <svg
-                  className="w-2.5 h-2.5 ms-2.5"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 10 6"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m1 1 4 4 4-4"
-                  />
-                </svg>
-              </button>
-              <div
-                id="dropdownNavbar"
-                className="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 dark:divide-gray-600"
-              >
-                <ul
-                  className="py-2 text-sm text-gray-700 dark:text-gray-400"
-                  aria-labelledby="dropdownLargeButton"
-                >
-                  <li>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                    >
-                      Dashboard
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                    >
-                      Settings
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                    >
-                      Earnings
-                    </a>
-                  </li>
-                </ul>
-                <div className="py-1">
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+          </a>
+        </div>
+        <div className="flex lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+          >
+            <span className="sr-only">Abrir menu</span>
+            <Bars3Icon aria-hidden="true" className="size-6" />
+          </button>
+        </div>
+        <div className="hidden lg:flex lg:gap-x-12">
+          <div className="popOverButton relative">
+            <a
+              href="#"
+              className="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900"
+            >
+              Cursos
+              <ChevronDownIcon
+                aria-hidden="true"
+                className="size-5 flex-none text-gray-400"
+              />
+            </a>
+
+            <div className="popOverPanel absolute top-full -left-8 z-10 mt-3 w-screen max-w-md overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5 transition data-closed:translate-y-1 data-closed:opacity-0 data-enter:duration-200 data-enter:ease-out data-leave:duration-150 data-leave:ease-in">
+              <div className="p-4">
+                {products.map((item) => (
+                  <div
+                    key={item.name}
+                    className="group relative flex items-center gap-x-6 rounded-lg p-4 text-sm/6 hover:bg-gray-50"
                   >
-                    Sign out
-                  </a>
-                </div>
+                    <div className="flex size-11 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white">
+                      <item.icon
+                        aria-hidden="true"
+                        className="size-6 text-gray-600 group-hover:text-indigo-600"
+                      />
+                    </div>
+                    <div className="flex-auto">
+                      <a
+                        href={item.href}
+                        className="block font-semibold text-gray-900"
+                      >
+                        {item.name}
+                        <span className="absolute inset-0" />
+                      </a>
+                      <p className="mt-1 text-gray-600">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-              >
-                Services
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-              >
-                Pricing
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-              >
-                Contact
-              </a>
-            </li>
-          </ul>
+              <div className="grid grid-cols-2 divide-x divide-gray-900/5 bg-gray-50">
+                {callsToAction.map((item) => (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    className="flex items-center justify-center gap-x-2.5 p-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-100"
+                  >
+                    <item.icon
+                      aria-hidden="true"
+                      className="size-5 flex-none text-gray-400"
+                    />
+                    {item.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <a href="#" className="text-sm/6 font-semibold text-gray-900">
+            Certificados
+          </a>
+        </div>
+        <div className="hidden lg:flex lg:flex-1 gap-2 lg:justify-end">
+          <input
+            placeholder="¿Qué quieres aprender?"
+            className="hidden 2xl:flex items-center gap-2 rounded-md border-2 border-[#CDD1DC] text-sm/6 text-[#031B4E] font-semibold px-3 py-1.5"
+          />
+          <Hyperlink
+            text="Acceder"
+            href="/auth/login"
+            className="border-2 border-[#1D448E] text-[#1D448E] text-sm/6"
+          />
+          <Hyperlink
+            text="Crear cuenta"
+            href="/auth/register"
+            className="bg-[#2979FF] text-white text-sm/6"
+          />
+        </div>
+      </nav>
+      <div id="dialog" className={mobileMenuOpen ? "lg:hidden" : "hidden"}>
+        <div className="fixed inset-0 z-10" />
+        <div
+          id="dialogPanel"
+          className="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10"
+        >
+          <div className="flex items-center justify-between">
+            <a href="#" className="-m-1.5 p-1.5">
+              <span className="sr-only">Your Company</span>
+              <img
+                alt=""
+                src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+                className="h-8 w-auto"
+              />
+            </a>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(false)}
+              className="-m-2.5 rounded-md p-2.5 text-gray-700"
+            >
+              <span className="sr-only">Close menu</span>
+              <XMarkIcon aria-hidden="true" className="size-6" />
+            </button>
+          </div>
+          <div className="mt-6 flow-root">
+            <div className="-my-6 divide-y divide-gray-500/10">
+              <div className="space-y-2 py-6">
+                <div className="-mx-3">
+                  <button className="group flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-50">
+                    Cursos
+                    <ChevronDownIcon
+                      aria-hidden="true"
+                      className="size-5 flex-none group-data-open:rotate-180"
+                    />
+                  </button>
+                  <div className="mt-2 space-y-2">
+                    {[...products].map((item) => (
+                      <a
+                        key={item.name}
+                        href={item.href}
+                        className="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50"
+                      >
+                        {item.name}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+                <a
+                  href="#"
+                  className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                >
+                  Company
+                </a>
+              </div>
+              <div className="py-6">
+                <a
+                  href="#"
+                  className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                >
+                  Log in
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

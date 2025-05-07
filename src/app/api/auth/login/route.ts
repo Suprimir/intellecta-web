@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { userInput } from "@/utils/validateUser";
+import { User } from "@/types/api";
 
 const JWT_SECRET = process.env.JWT_SECRET || "";
 
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const { username, password } = await request.json();
 
     // Obtenemos los datos del usuario
-    const users: userInput[] = await pool.query(
+    const users: User[] = await pool.query(
       "SELECT * FROM users WHERE username = ? LIMIT 1",
       [username]
     );
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = users[0] as userInput;
+    const user = users[0] as User;
 
     // Verificamos que las contraseñas coincidan
     const isPasswordValid = bcrypt.compareSync(password, user.password);

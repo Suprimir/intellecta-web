@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.2",
+    "@heroicons/react": "^2.2.0",
     "bcrypt": "^5.1.1",
     "cookie": "^1.0.2",
     "jose": "^6.0.10",

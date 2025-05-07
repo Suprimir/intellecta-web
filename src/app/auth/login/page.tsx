@@ -2,7 +2,7 @@
 
 "use client";
 
-import { LogIn } from "@/app/actions/auth";
+import { LogIn } from "@/actions/auth";
 
 export default function RegisterPage() {
   const handleSubmit = (formData: FormData) => {

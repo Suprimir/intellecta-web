@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
-import { verifyAuth } from "@/libs/auth";
 import { courseInput, validateCourses } from "@/utils/validateCourses";
 import { validatePermissions } from "@/utils/validatePermissions";
 
@@ -41,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica que los valores obligatorios tengan contenido
-    if (!course.name) {
+    if (!course.course_Name) {
       return NextResponse.json(
         { message: "Falta el valor de name del curso." },
         { status: 400 }
@@ -78,8 +77,8 @@ export async function POST(request: NextRequest) {
 
     // Despues de las verificaciones realiza el insert a la BD
     const result: RequestBody = await pool.query("INSERT INTO courses SET ?", {
-      course_Name: course.name,
-      course_Description: course.description,
+      course_Name: course.course_Name,
+      course_Description: course.course_Description,
       course_Date: course.date,
       course_Duration: course.duration,
       instructor_ID: course.uuid,

@@ -1,20 +1,18 @@
+/*
+  Retorna un array con los errores
+  de validacion del usuario (username, email y password)
+*/
+
 "use server";
 
-export interface userInput {
-  user_ID: string;
-  username: string;
-  email: string;
-  password: string;
-  role: "student" | "instructor" | "admin";
-  profilePicture: string | null;
-}
+import { User } from "@/types/api";
 
 export interface userErrors {
   field: string;
   messsage: string;
 }
 
-export async function validateUser(data: userInput) {
+export async function validateUser(data: User) {
   const errors: userErrors[] = [];
 
   // Verificamos que todos los campos necesarios estan.
