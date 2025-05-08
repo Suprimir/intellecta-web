@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { redirect } from "next/navigation";
 import Image from "next/image";
 import "../styles/NavBar.css";
 import {
@@ -15,7 +14,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, EyeIcon } from "@heroicons/react/20/solid";
 import Hyperlink from "./common/Hyperlink";
-import Input from "./common/Input";
 
 const products = [
   {
@@ -60,7 +58,7 @@ export default function NavBar() {
     <header className="bg-white">
       <nav
         aria-label="Global"
-        className="mx-auto flex  max-w-[90%] items-center justify-between p-4 lg:px-8"
+        className="mx-auto flex max-w-[90%] items-center justify-between p-4 lg:px-8"
       >
         <div className="flex lg:flex-1">
           <a href="#" className="-m-1.5">
