@@ -121,13 +121,21 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-7rem)] flex justify-center items-center">
-      <form action={handleSubmit} className="w-1/4">
+    <div className="min-h-[calc(100vh-7rem)] bg-gradient-to-br from-[#FFBD00] to-[#ffeaaf] flex items-center justify-center">
+      <form
+        action={handleSubmit}
+        className="w-full mx-4 md:w-1/3 bg-white rounded-2xl p-8"
+      >
         <h1 className="font-bold text-slate-300 text-4xl mb-4 text-center">
           Register
         </h1>
-        <div>
-          <label htmlFor="username" className="text-white mb-2 text-sm ">
+
+        {/* Username */}
+        <div className="mb-4">
+          <label
+            htmlFor="username"
+            className="text-black mb-2 text-xl font-extrabold ms-2 block"
+          >
             Username
           </label>
           <input
@@ -136,14 +144,19 @@ export default function RegisterPage() {
             type="text"
             onChange={(e) => setUsername(e.target.value)}
             onBlur={() => handleBlur("username")}
-            className="p-3 mb-2 rounded bg-slate-900 text-slate-300 w-full"
+            className="p-3 rounded bg-[#DFDCDC] text-slate-300 w-full"
           />
           {touched.username && errors.username && (
-            <p className="text-sm text-red-500">{errors.username}</p>
+            <p className="text-sm text-red-500 mt-1">{errors.username}</p>
           )}
         </div>
-        <div>
-          <label htmlFor="email" className="text-white mb-2 text-sm ">
+
+        {/* Email */}
+        <div className="mb-4">
+          <label
+            htmlFor="email"
+            className="text-black mb-2 text-xl font-extrabold ms-2 block"
+          >
             Email
           </label>
           <input
@@ -152,14 +165,19 @@ export default function RegisterPage() {
             type="email"
             onChange={(e) => setEmail(e.target.value)}
             onBlur={() => handleBlur("email")}
-            className="p-3 mb-2 rounded bg-slate-900 text-slate-300 w-full"
+            className="p-3 rounded bg-[#DFDCDC] text-slate-300 w-full"
           />
           {touched.email && errors.email && (
-            <p className="text-sm text-red-500">{errors.email}</p>
+            <p className="text-sm text-red-500 mt-1">{errors.email}</p>
           )}
         </div>
-        <div>
-          <label htmlFor="password" className="text-white mb-2 text-sm ">
+
+        {/* Password */}
+        <div className="mb-4">
+          <label
+            htmlFor="password"
+            className="text-black mb-2 text-xl font-extrabold ms-2 block"
+          >
             Password
           </label>
           <input
@@ -168,53 +186,66 @@ export default function RegisterPage() {
             type="password"
             onChange={(e) => setPassword(e.target.value)}
             onBlur={() => handleBlur("password")}
-            className="p-3 mb-2 rounded bg-slate-900 text-slate-300 w-full"
+            className="p-3 rounded bg-[#DFDCDC] text-slate-300 w-full"
           />
           {touched.password && errors.password && (
-            <p className="text-sm text-red-500">{errors.password}</p>
+            <p className="text-sm text-red-500 mt-1">{errors.password}</p>
           )}
           {(passValidations.mayus ||
             passValidations.numbers ||
             passValidations.symbols) &&
             !errors.password && (
-              <p className="text-red-500 text-sm">
-                Puedes mejorar tu contraseña de la siguientes maneras:
-              </p>
+              <div className="mt-2">
+                <p className="text-red-500 text-sm">
+                  Puedes mejorar tu contraseña de las siguientes maneras:
+                </p>
+                <ul className="list-disc pl-5 mt-1">
+                  {passValidations.mayus && (
+                    <li className="text-sm text-red-500">
+                      {passValidations.mayus}
+                    </li>
+                  )}
+                  {passValidations.numbers && (
+                    <li className="text-sm text-red-500">
+                      {passValidations.numbers}
+                    </li>
+                  )}
+                  {passValidations.symbols && (
+                    <li className="text-sm text-red-500">
+                      {passValidations.symbols}
+                    </li>
+                  )}
+                </ul>
+              </div>
             )}
-          <ul className="list-disc">
-            {passValidations.mayus && !errors.password && (
-              <li className="text-sm text-red-500">{passValidations.mayus}</li>
-            )}
-            {passValidations.numbers && !errors.password && (
-              <li className="text-sm text-red-500">
-                {passValidations.numbers}
-              </li>
-            )}
-            {passValidations.symbols && !errors.password && (
-              <li className="text-sm text-red-500">
-                {passValidations.symbols}
-              </li>
-            )}
-          </ul>
         </div>
-        <div>
-          <label htmlFor="confirmPassword" className="text-white mb-2 text-sm ">
+
+        {/* Confirm Password */}
+        <div className="mb-4">
+          <label
+            htmlFor="confirmPassword"
+            className="text-black mb-2 text-xl font-extrabold ms-2 block"
+          >
             Confirm Password
           </label>
           <input
             id="confirmPassword"
             name="confirmPassword"
+            type="password"
             onChange={(e) => setConfirmPassword(e.target.value)}
             onBlur={() => handleBlur("confirmPassword")}
-            className="p-3 mb-2 rounded bg-slate-900 text-slate-300 w-full"
+            className="p-3 rounded bg-[#DFDCDC] text-slate-300 w-full"
           />
           {touched.confirmPassword && errors.confirmPassword && (
-            <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+            <p className="text-sm text-red-500 mt-1">
+              {errors.confirmPassword}
+            </p>
           )}
         </div>
+
         <button
           type="submit"
-          className="bg-blue-500 text-white p-3 my-4 w-full rounded-lg font-bold"
+          className="bg-blue-500 text-white p-3 my-4 w-full rounded-lg font-bold hover:bg-blue-600 transition-colors"
         >
           Register
         </button>

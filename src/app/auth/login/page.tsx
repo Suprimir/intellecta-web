@@ -10,36 +10,48 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-7rem)] flex justify-center items-center">
-      <form action={handleSubmit} className="w-1/4">
+    <div className="min-h-[calc(100vh-5rem)] bg-gradient-to-br from-[#FFBD00] to-[#ffeaaf] flex items-center justify-center">
+      <form
+        action={handleSubmit}
+        className="w-full mx-4 md:w-1/3 bg-white rounded-2xl p-8"
+      >
         <h1 className="font-bold text-slate-300 text-4xl mb-4 text-center">
           Log In
         </h1>
-        <div>
-          <label htmlFor="username" className="text-white mb-2 text-sm ">
+
+        <div className="mb-4">
+          <label
+            htmlFor="username"
+            className="text-black mb-2 text-xl font-extrabold ms-2 block"
+          >
             Username
           </label>
           <input
             id="username"
             name="username"
             type="text"
-            className="p-3 mb-2 rounded bg-slate-900 text-slate-300 w-full"
+            className="p-3 rounded bg-[#DFDCDC] text-slate-300 w-full"
           />
         </div>
-        <div>
-          <label htmlFor="password" className="text-white mb-2 text-sm ">
+
+        <div className="mb-4">
+          <label
+            htmlFor="password"
+            className="text-black mb-2 text-xl font-extrabold ms-2 block"
+          >
             Password
           </label>
           <input
             id="password"
             name="password"
             type="password"
-            className="p-3 mb-2 rounded bg-slate-900 text-slate-300 w-full"
+            className="p-3 rounded bg-[#DFDCDC] text-slate-300 w-full"
           />
         </div>
+
         <button
           type="submit"
-          className="bg-blue-500 text-white p-3 my-4 w-full rounded-lg font-bold"
+          className="bg-blue-500 cursor-pointer text-white p-3 my-4 w-full rounded-lg font-bold hover:bg-blue-600 transition-colors"
         >
           Log In
         </button>

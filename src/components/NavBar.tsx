@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import "../styles/NavBar.css";
 import {
@@ -11,6 +12,7 @@ import {
   LanguageIcon,
   Bars3Icon,
   XMarkIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, EyeIcon } from "@heroicons/react/20/solid";
 import Hyperlink from "./common/Hyperlink";
@@ -53,6 +55,31 @@ const callsToAction = [
 
 export default function NavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [navState, setNavState] = useState({
+    showLoginButton: true,
+    showRegisterButton: true,
+  });
+
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathname === "/auth/register") {
+      setNavState({
+        showRegisterButton: false,
+        showLoginButton: true,
+      });
+    } else if (pathname === "/auth/login") {
+      setNavState({
+        showRegisterButton: true,
+        showLoginButton: false,
+      });
+    } else {
+      setNavState({
+        showRegisterButton: true,
+        showLoginButton: true,
+      });
+    }
+  }, [pathname]);
 
   return (
     <header className="bg-white">
@@ -143,20 +170,27 @@ export default function NavBar() {
           </a>
         </div>
         <div className="hidden lg:flex lg:flex-1 gap-2 lg:justify-end">
-          <input
-            placeholder="¿Qué quieres aprender?"
-            className="hidden 2xl:flex items-center gap-2 rounded-md border-2 border-[#CDD1DC] text-sm/6 text-[#031B4E] font-semibold px-3 py-1.5"
-          />
-          <Hyperlink
-            text="Acceder"
-            href="/auth/login"
-            className="border-2 border-[#1D448E] text-[#1D448E] text-sm/6"
-          />
-          <Hyperlink
-            text="Crear cuenta"
-            href="/auth/register"
-            className="bg-[#2979FF] text-white text-sm/6"
-          />
+          <div className="hidden 2xl:flex items-center gap-2 rounded-md border-2 border-[#CDD1DC] text-sm/6 text-[#031B4E] font-semibold px-3 py-1.5">
+            <input placeholder="¿Qué quieres aprender?" className="" />
+            <MagnifyingGlassIcon
+              aria-hidden="true"
+              className="size-5 flex-none group-data-open:rotate-180"
+            />
+          </div>
+          {navState.showLoginButton && (
+            <Hyperlink
+              text="Acceder"
+              href="/auth/login"
+              className="border-2 border-[#0000004D] text-[#000000] text-sm/6"
+            />
+          )}
+          {navState.showRegisterButton && (
+            <Hyperlink
+              text="Crear cuenta"
+              href="/auth/register"
+              className="border-2 border-[#000000B0] bg-[#0000004D] text-white text-sm/6"
+            />
+          )}
         </div>
       </nav>
       <div id="dialog" className={mobileMenuOpen ? "lg:hidden" : "hidden"}>
@@ -206,12 +240,6 @@ export default function NavBar() {
                     ))}
                   </div>
                 </div>
-                <a
-                  href="#"
-                  className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                >
-                  Company
-                </a>
               </div>
               <div className="py-6">
                 <a
