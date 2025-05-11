@@ -2,6 +2,8 @@ import { jwtVerify } from "jose";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const JWT_SECRET = process.env.JWT_SECRET || "";
+
 export async function middleware(request: NextRequest) {
   const sessionToken = request.cookies.get("sessionToken")?.value;
   if (sessionToken == undefined) {
@@ -11,7 +13,7 @@ export async function middleware(request: NextRequest) {
   try {
     const { payload } = await jwtVerify(
       sessionToken,
-      new TextEncoder().encode("secret")
+      new TextEncoder().encode(JWT_SECRET)
     );
     console.log(payload);
     return NextResponse.next();

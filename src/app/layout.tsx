@@ -16,9 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html className="h-full bg-white hydrated" lang="en">
-      <body
-        className={`h-full ${inter.className} grid grid-rows-[auto_1fr] min-h-screen`}
-      >
+      <body className={`h-full ${inter.className} min-h-screen`}>
         <NavBar />
         {children}
       </body>

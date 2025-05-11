@@ -1,6 +1,5 @@
 "use client";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { useState } from "react";
 
@@ -23,7 +22,7 @@ export default function DashboardPage() {
   };
 
   const logout = async () => {
-    const response = await fetch("/api/auth/logout", {
+    await fetch("/api/auth/logout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

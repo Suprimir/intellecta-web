@@ -3,6 +3,8 @@
 import { verify } from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 
+const JWT_SECRET = process.env.JWT_SECRET || "";
+
 export async function GET(request: NextRequest) {
   try {
     const sessionToken = request.cookies.get("sessionToken")?.value;
@@ -14,7 +16,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const user = verify(sessionToken, "secret");
+    const user = verify(sessionToken, JWT_SECRET);
 
     return NextResponse.json(user);
   } catch (error: unknown) {

@@ -121,7 +121,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-7rem)] bg-gradient-to-br from-[#FFBD00] to-[#ffeaaf] flex items-center justify-center">
+    <div className="min-h-[calc(100vh-6.6vh)] bg-gradient-to-br from-[#FFBD00] to-[#ffeaaf] flex items-center justify-center">
       <form
         action={handleSubmit}
         className="w-full mx-4 md:w-1/3 bg-white rounded-2xl p-8"

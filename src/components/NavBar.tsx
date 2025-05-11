@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import "../styles/NavBar.css";
@@ -55,11 +55,13 @@ const callsToAction = [
 
 export default function NavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [navState, setNavState] = useState({
     showLoginButton: true,
     showRegisterButton: true,
   });
 
+  const dropdownRef = useRef(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -81,6 +83,28 @@ export default function NavBar() {
     }
   }, [pathname]);
 
+  useEffect(() => {
+    function handleClickOutside() {
+      if (profileMenuOpen && dropdownRef.current) {
+        setProfileMenuOpen(false);
+      }
+    }
+
+    if (typeof window !== "undefined") {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        document.removeEventListener("mousedown", handleClickOutside);
+      }
+    };
+  }, [profileMenuOpen]);
+
+  const toggleProfileMenu = () => {
+    setProfileMenuOpen(!profileMenuOpen);
+  };
+
   return (
     <header className="bg-white">
       <nav
@@ -88,8 +112,8 @@ export default function NavBar() {
         className="mx-auto flex max-w-[90%] items-center justify-between p-4 lg:px-8"
       >
         <div className="flex lg:flex-1">
-          <a href="#" className="-m-1.5">
-            <span className="sr-only">Your Company</span>
+          <a href="/" className="-m-1.5">
+            <span className="sr-only">Intellecta</span>
             <Image
               src={"/intellecta-logo.svg"}
               alt=""
@@ -191,6 +215,62 @@ export default function NavBar() {
               className="border-2 border-[#000000B0] bg-[#0000004D] text-white text-sm/6"
             />
           )}
+          <div className="relative ml-3">
+            <div className="">
+              {/*  Boton del profile  */}
+              <button
+                type="button"
+                className="relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
+                id="user-menu-button"
+                aria-expanded={profileMenuOpen}
+                aria-haspopup="true"
+                onClick={toggleProfileMenu}
+              >
+                <span className="absolute -inset-1.5"></span>
+                <span className="sr-only">Open user menu</span>
+                <img
+                  className="size-10 rounded-full"
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  alt=""
+                />
+              </button>
+            </div>
+            {/*   Dropdown   */}
+            {profileMenuOpen && (
+              <div
+                className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden"
+                ref={dropdownRef}
+                role="menu"
+                aria-orientation="vertical"
+                aria-labelledby="user-menu-button"
+              >
+                <a
+                  href="#"
+                  className="block px-4 py-2 text-sm text-gray-700"
+                  role="menuitem"
+                  id="user-menu-item-0"
+                >
+                  Your Profile
+                </a>
+                <a
+                  href="#"
+                  className="block px-4 py-2 text-sm text-gray-700"
+                  role="menuitem"
+                  id="user-menu-item-1"
+                >
+                  Settings
+                </a>
+                <a
+                  href="#"
+                  className="block px-4 py-2 text-sm text-gray-700"
+                  role="menuitem"
+                  id="user-menu-item-2"
+                >
+                  Sign out
+                </a>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
       <div id="dialog" className={mobileMenuOpen ? "lg:hidden" : "hidden"}>
