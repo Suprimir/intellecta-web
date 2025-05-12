@@ -16,6 +16,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, EyeIcon } from "@heroicons/react/20/solid";
 import Hyperlink from "./common/Hyperlink";
+import { useAuth } from "@/libs/context/AuthContext";
 
 const products = [
   {
@@ -63,6 +64,7 @@ export default function NavBar() {
 
   const dropdownRef = useRef(null);
   const pathname = usePathname();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     if (pathname === "/auth/register") {
@@ -250,7 +252,7 @@ export default function NavBar() {
                   role="menuitem"
                   id="user-menu-item-0"
                 >
-                  Your Profile
+                  Your Profile {user?.username}
                 </a>
                 <a
                   href="#"
