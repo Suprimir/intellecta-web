@@ -3,13 +3,15 @@
 import Image from "next/image";
 import Hyperlink from "@/components/common/Hyperlink";
 import CoursesMainPage from "@/components/CoursesMainPage";
-import {
-  AcademicCapIcon,
-  StarIcon,
-  GlobeAmericasIcon,
-} from "@heroicons/react/24/outline";
+import { AcademicCapIcon, StarIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "@/libs/context/AuthContext";
 
 export default function HomePage() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
   return (
     <div className="grid grid-cols-3 grid-rows-1">
       <div className="col-span-3 row-start-1 bg-[#FFBD008A] h-[400px] lg:h-[600px]">
@@ -19,11 +21,20 @@ export default function HomePage() {
               <h1 className="text-center xl:text-start text-3xl sm:text-4xl md:text-5xl lg:text-[5rem] xl:text-6xl 2xl:text-[5rem] font-extrabold leading-tight max-w-[100%]">
                 Contamos con +20 cursos con certificados en diversas áreas
               </h1>
-              <Hyperlink
-                text="Regístrate gratis"
-                href="/auth/register"
-                className="bg-black text-white font-bold py-3 px-6 rounded-lg text-lg md:text-2xl hover:bg-gray-800 transition-colors whitespace-nowrap"
-              />
+              {user && (
+                <Hyperlink
+                  text="Dashboard"
+                  href="/dashboard"
+                  className="bg-black text-white font-bold py-3 px-6 rounded-lg text-lg md:text-2xl hover:bg-gray-800 transition-colors whitespace-nowrap"
+                />
+              )}
+              {!user && (
+                <Hyperlink
+                  text="Regístrate gratis"
+                  href="/auth/register"
+                  className="bg-black text-white font-bold py-3 px-6 rounded-lg text-lg md:text-2xl hover:bg-gray-800 transition-colors whitespace-nowrap"
+                />
+              )}
             </div>
           </div>
 
@@ -63,9 +74,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="col-span-3 row-start-3">
-        <CoursesMainPage />
-      </div>
+      <CoursesMainPage />
       <div className="col-span-3 row-start-4">4</div>
       <div className="col-span-3 row-start-5">5</div>
     </div>

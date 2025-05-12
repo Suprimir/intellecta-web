@@ -1,5 +1,4 @@
 "use client";
-
 import {
   createContext,
   useState,
@@ -7,10 +6,14 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { verify } from "jsonwebtoken";
-import { User } from "@/types/api";
 
-const JWT_SECRET = process.env.JWT_SECRET || "";
+// Definición del tipo de usuario
+type User = {
+  uuid: string;
+  username: string;
+  email: string;
+  rol?: string;
+};
 
 // Interfaz simplificada del contexto
 interface AuthContextType {
@@ -34,30 +37,24 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getTokenFromCookie = (): string | null => {
-      if (typeof window === "undefined") return null;
-
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; sessionToken=`);
-
-      if (parts.length === 2) {
-        return parts.pop()?.split(";").shift() || null;
-      }
-      return null;
-    };
-
-    const checkUser = () => {
+    // Función para verificar si hay un usuario autenticado
+    const checkUser = async () => {
       try {
-        const token = getTokenFromCookie();
+        const response = await fetch("/api/profile");
 
-        if (token) {
-          const decodedUser = verify(token, JWT_SECRET);
-          const userData = decodedUser as User;
-          console.log(userData);
-          setUser(userData);
+        if (response.ok) {
+          const userData: User = await response.json();
+
+          // Establecer el usuario si la verificación es exitosa
+          setUser({
+            uuid: userData.uuid,
+            username: userData.username,
+            email: userData.email,
+            rol: userData.rol,
+          });
         } else {
           setUser(null);
         }
@@ -69,16 +66,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
+    // Verificar usuario al cargar la página
     checkUser();
 
-    const interval = setInterval(checkUser, 5 * 60 * 1000);
+    // Opcional: Agregar un evento para verificar la cookie periódicamente
+    const interval = setInterval(checkUser, 5 * 60 * 1000); // Cada 5 minutos
 
+    // Limpiar el intervalo cuando el componente se desmonte
     return () => clearInterval(interval);
   }, []);
 
-  const value = { user, loading };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  // Proporcionar el contexto con el usuario y el estado de carga
+  return (
+    <AuthContext.Provider value={{ user, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
+// Hook personalizado para usar el contexto
 export const useAuth = () => useContext(AuthContext);

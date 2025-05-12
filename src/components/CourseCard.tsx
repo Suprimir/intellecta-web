@@ -10,13 +10,14 @@ export default function CourseCard({
   description,
 }: CourseCardProps) {
   return (
-    <div className="bg-slate-200 w-80 rounded-2xl m-2 p-2">
+    <div className="bg-[#cccccc] max-w-[95%] rounded-2xl m-2 p-2">
       <img
         src={img === null ? "" : img}
         className="w-78 h-40 place-self-center p-2 rounded-2xl"
       ></img>
-      <h1 className="text-2xl font-bold">{title}</h1>
-      <p>{description}</p>
+      <h1 className="text-xl text-[#31B2A5] font-bold">{title}</h1>
+      <p className="text-sm text-[#687695]">Titulo a Certificar</p>
+      <p className="text-sm text-[#0D7682]">Certificado</p>
     </div>
   );
 }
