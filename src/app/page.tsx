@@ -4,14 +4,51 @@ import Image from "next/image";
 import Hyperlink from "@/components/common/Hyperlink";
 import CoursesMainPage from "@/components/CoursesMainPage";
 import { AcademicCapIcon, StarIcon } from "@heroicons/react/24/outline";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/libs/context/AuthContext";
+import { Course } from "@/types/api";
 
 export default function HomePage() {
-  const { user, loading } = useAuth();
+  const { user, loadingUser } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [courses, setCourses] = useState<Course[]>([]);
+  let coursesLoaded = false;
+
+  async function getCourses() {
+    const response = await fetch("/api/courses?limit=8");
+    const coursesJson = await response.json();
+    return coursesJson;
+  }
+
+  useEffect(() => {
+    const loadMainCourses = async () => {
+      try {
+        const mainCourses: Course[] = await getCourses();
+        setCourses(mainCourses);
+      } catch (error: unknown) {
+        console.error((error as Error).message);
+      }
+    };
+
+    loadMainCourses();
+
+    coursesLoaded = true;
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (coursesLoaded && loadingUser) {
+        setLoading(false);
+      }
+    } catch (error: unknown) {
+      console.error((error as Error).message);
+    }
+  }, [loadingUser]);
 
   if (loading) {
     return <div>Cargando...</div>;
   }
+
   return (
     <div className="grid grid-cols-3 grid-rows-1">
       <div className="col-span-3 row-start-1 bg-[#FFBD008A] h-[400px] lg:h-[600px]">
@@ -74,9 +111,94 @@ export default function HomePage() {
         </div>
       </div>
 
-      <CoursesMainPage />
-      <div className="col-span-3 row-start-4">4</div>
-      <div className="col-span-3 row-start-5">5</div>
+      <CoursesMainPage courses={courses} />
+      <div className="col-span-3 row-start-4 bg-white">
+        <div className="flex flex-col md:flex-row items-center justify-between max-w-6xl mx-auto px-4 py-12 gap-8">
+          <div className="w-full md:w-1/2 space-y-4">
+            <h2 className="text-3xl font-bold text-teal-600">
+              Aprende de forma práctica
+            </h2>
+            <p className="text-gray-700 text-lg">
+              Los cursos incluyen lecturas, videos, proyectos y actividades de
+              la vida real que te ayudarán a colocar en práctica tu aprendizaje.
+            </p>
+          </div>
+
+          <div className="w-full md:w-1/2 relative">
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <Image
+                src="/mainPageImage2.webp"
+                alt="Estudiante aprendiendo en computadora"
+                width={600}
+                height={400}
+                className="object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="col-span-3 row-start-5">
+        <div className="bg-gray-100 w-full py-16">
+          <div className="flex flex-col md:flex-row items-center justify-between max-w-6xl mx-auto px-4 gap-8">
+            <div className="w-full md:w-1/2 space-y-4">
+              <h2 className="text-3xl font-bold">
+                <span className="text-teal-700">Obtén un </span>
+                <span className="text-teal-500">Certificado Oficial </span>
+                <span className="text-teal-700">de INTELLECTA</span>
+              </h2>
+
+              <p className="text-gray-700 text-lg">
+                Demuestra tus habilidades con certificaciones reconocidas por la
+                industria a nivel internacional.
+              </p>
+
+              <div>
+                <a
+                  href="#"
+                  className="text-teal-500 font-medium hover:text-teal-600 transition-colors"
+                >
+                  Saber más
+                </a>
+              </div>
+            </div>
+
+            <div className="w-full md:w-1/2 relative">
+              <div className="shadow-xl rounded-lg overflow-hidden bg-white p-2">
+                <Image
+                  src="/mainPageImage3.webp"
+                  alt="Certificado Oficial de INTELLECTA"
+                  width={600}
+                  height={400}
+                  className="object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="col-span-3 row-start-6">
+        <div className="w-full bg-yellow-200 py-16 px-4 text-center">
+          <div className="max-w-3xl mx-auto space-y-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-center">
+              Únete a más de 8 millones de estudiantes
+              <br className="hidden md:block" />
+              que aprenden y se certifican con
+              <br className="hidden md:block" />
+              INTELLECTA
+            </h2>
+
+            <div>
+              <button className="bg-teal-600 hover:bg-teal-700 text-white py-3 px-6 rounded-md border border-teal-700 transition-colors duration-300 font-medium">
+                Crear cuenta gratis
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-700">
+              Acceso gratis por siempre, sin límites de tiempo.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

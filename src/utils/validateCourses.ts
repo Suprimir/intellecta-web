@@ -1,29 +1,20 @@
 "use server";
 
 import { pool } from "@/libs/mysql";
-
-export interface courseInput {
-  course_ID: number;
-  course_Name: string;
-  course_Description: string;
-  date: Date;
-  duration: number;
-  uuid: string;
-  category_ID: number;
-}
+import { Course } from "@/types/api";
 
 export interface courseErrors {
   field: string;
   message: string;
 }
 
-export async function validateCourses(data: courseInput) {
+export async function validateCourses(data: Course) {
   const errors: courseErrors[] = [];
 
   // Si un curso con el mismo nombre ya existe
   const courseAlreadyExist: [] = await pool.query(
-    "SELECT 1 FROM courses WHERE course_Name = ?",
-    data.course_Name
+    "SELECT 1 FROM courses WHERE name = ?",
+    data.name
   );
 
   pool.end();
@@ -38,7 +29,7 @@ export async function validateCourses(data: courseInput) {
 
   // Verificar que el id de la categoria existe
   const categoryExists: [] = await pool.query(
-    "SELECT 1 FROM categories WHERE category_ID = ?",
+    "SELECT 1 FROM categories WHERE id = ?",
     data.category_ID
   );
 
@@ -51,7 +42,7 @@ export async function validateCourses(data: courseInput) {
 
   // Verifica que el ID del instructor exista en la BD
   const instructorExists: [] = await pool.query(
-    "SELECT 1 FROM users WHERE user_ID = ? AND role = 'admin' OR role = 'instructor'",
+    "SELECT 1 FROM users WHERE uuid = ? AND role = 'admin' OR role = 'instructor'",
     data.uuid
   );
 

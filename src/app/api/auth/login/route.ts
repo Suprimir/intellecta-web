@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const token = jwt.sign(
       {
         exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
-        uuid: user.user_ID,
+        uuid: user.uuid,
         username,
         email: user.email,
         rol: user.role,

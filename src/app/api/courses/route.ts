@@ -1,17 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
-import { courseInput, validateCourses } from "@/utils/validateCourses";
+import { validateCourses } from "@/utils/validateCourses";
 import { validatePermissions } from "@/utils/validatePermissions";
+import { Course } from "@/types/api";
 
 type RequestBody = {
   insertId: number;
   affectedRows: number;
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const result = await pool.query("SELECT * FROM courses");
-    return NextResponse.json(result);
+    const searchParams = request.nextUrl.searchParams;
+    const limitParam = searchParams.get("limit");
+
+    const limit = limitParam ? parseInt(limitParam) : null;
+    if (limit !== null && (isNaN(limit) || limit <= 0)) {
+      return NextResponse.json(
+        { message: "El parámetro 'limit' debe ser un número positivo." },
+        { status: 400 }
+      );
+    }
+
+    const query = limit
+      ? "SELECT * FROM courses LIMIT ?"
+      : "SELECT * FROM courses";
+    const courses = await pool.query(query, limit);
+
+    return NextResponse.json(courses);
   } catch (error: unknown) {
     console.log(error);
     return NextResponse.json(
@@ -27,7 +43,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const course: courseInput = await request.json();
+    const course: Course = await request.json();
 
     // Verificar que el usuario tenga permisos para crear cursos
     if (!(await validatePermissions(request, true))) {
@@ -40,9 +56,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica que los valores obligatorios tengan contenido
-    if (!course.course_Name) {
+    if (!course.name) {
       return NextResponse.json(
         { message: "Falta el valor de name del curso." },
+        { status: 400 }
+      );
+    } else if (!course.image) {
+      return NextResponse.json(
+        { message: "Falta el valor de course_Image." },
         { status: 400 }
       );
     } else if (!course.duration) {
@@ -77,10 +98,11 @@ export async function POST(request: NextRequest) {
 
     // Despues de las verificaciones realiza el insert a la BD
     const result: RequestBody = await pool.query("INSERT INTO courses SET ?", {
-      course_Name: course.course_Name,
-      course_Description: course.course_Description,
-      course_Date: course.date,
-      course_Duration: course.duration,
+      name: course.name,
+      description: course.description,
+      image: course.image,
+      date: course.date,
+      duration: course.duration,
       instructor_ID: course.uuid,
       category_ID: course.category_ID,
     });

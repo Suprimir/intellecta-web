@@ -1,5 +1,5 @@
+import { User } from "@/types/api";
 import { renderConfirmationEmail } from "@/utils/renderConfirmationEmail";
-import { userInput } from "@/utils/validateUser";
 
 const nodemailer = require("nodemailer");
 
@@ -16,7 +16,7 @@ export const transporter = nodemailer.createTransport({
   },
 });
 
-export async function SendMailConfirmation(user: userInput, token: string) {
+export async function SendMailConfirmation(user: User, token: string) {
   await transporter.sendMail({
     from: '"Intellecta" <intellectawebapp@gmail.com>',
     to: user.email,

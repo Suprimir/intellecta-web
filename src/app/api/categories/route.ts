@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
-import { verifyAuth } from "@/libs/auth";
 import { validatePermissions } from "@/utils/validatePermissions";
 
 type RequestBody = {
   insertId: number;
   affectedRows: number;
 };
-
-interface Categories {
-  category_ID: number;
-  category_Description: string;
-}
 
 export async function GET() {
   try {
@@ -53,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     // Verificacion si ya existe una categoria con la misma descripcion
     const alreadyExist: RequestBody[] = await pool.query(
-      "SELECT 1 FROM categories WHERE category_Description = ?",
+      "SELECT 1 FROM categories WHERE description = ?",
       categoryDescription
     );
 
@@ -70,7 +64,7 @@ export async function POST(request: NextRequest) {
     const result: RequestBody = await pool.query(
       "INSERT INTO categories SET ?",
       {
-        category_Description: categoryDescription,
+        description: categoryDescription,
       }
     );
 

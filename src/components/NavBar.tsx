@@ -13,11 +13,11 @@ import {
   Bars3Icon,
   XMarkIcon,
   MagnifyingGlassIcon,
+  ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, EyeIcon } from "@heroicons/react/20/solid";
 import Hyperlink from "./common/Hyperlink";
 import { useAuth } from "@/libs/context/AuthContext";
-import { useSession } from "next-auth/react";
 
 const products = [
   {
@@ -63,9 +63,10 @@ export default function NavBar() {
     showRegisterButton: false,
   });
 
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const profileButtonRef = useRef<HTMLButtonElement | null>(null);
   const pathname = usePathname();
-  const { user, loading } = useAuth();
+  const { user, loadingUser } = useAuth();
 
   useEffect(() => {
     if (pathname === "/auth/register") {
@@ -87,8 +88,14 @@ export default function NavBar() {
   }, [pathname, user]);
 
   useEffect(() => {
-    function handleClickOutside() {
-      if (profileMenuOpen && dropdownRef.current) {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        profileMenuOpen &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        profileButtonRef.current &&
+        !profileButtonRef.current.contains(event.target as Node)
+      ) {
         setProfileMenuOpen(false);
       }
     }
@@ -108,7 +115,7 @@ export default function NavBar() {
     setProfileMenuOpen(!profileMenuOpen);
   };
 
-  if (loading) {
+  if (loadingUser) {
     return <div>Cargando...</div>;
   }
 
@@ -142,7 +149,7 @@ export default function NavBar() {
         <div className="hidden lg:flex lg:gap-x-12">
           <div className="popOverButton relative">
             <a
-              href="#"
+              href="/courses"
               className="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900"
             >
               Cursos
@@ -223,6 +230,19 @@ export default function NavBar() {
             />
           )}
           {user && (
+            <div className="relative flex items-center justify-center ml-3">
+              <a
+                href="/cart"
+                className="p-2 rounded-full transition-all duration-300 hover:bg-gray-100/30 hover:shadow-lg hover:shadow-gray-200/50 flex items-center justify-center"
+              >
+                <ShoppingCartIcon
+                  aria-hidden="true"
+                  className="size-6 text-gray-700 flex-none group-data-open:rotate-180"
+                />
+              </a>
+            </div>
+          )}
+          {user && (
             <div className="relative ml-3">
               <div className="">
                 {/*  Boton del profile  */}
@@ -233,13 +253,16 @@ export default function NavBar() {
                   aria-expanded={profileMenuOpen}
                   aria-haspopup="true"
                   onClick={toggleProfileMenu}
+                  ref={profileButtonRef}
                 >
                   <span className="absolute -inset-1.5"></span>
                   <span className="sr-only">Open user menu</span>
-                  <img
-                    className="size-10 rounded-full"
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                    alt=""
+                  <Image
+                    className="rounded-full"
+                    width="40"
+                    height="40"
+                    src={`/userImages/${user.uuid}.jpeg`}
+                    alt="Profile picture"
                   />
                 </button>
               </div>
@@ -253,26 +276,27 @@ export default function NavBar() {
                   aria-labelledby="user-menu-button"
                 >
                   <a
-                    href="#"
+                    href={`/profile/${user.uuid}`}
                     className="block px-4 py-2 text-sm text-gray-700"
                     role="menuitem"
                     id="user-menu-item-0"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    Your Profile {user?.username}
+                    Your Profile
                   </a>
                   <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700"
-                    role="menuitem"
-                    id="user-menu-item-1"
-                  >
-                    Settings
-                  </a>
-                  <a
-                    href="#"
+                    href="/auth/login"
                     className="block px-4 py-2 text-sm text-gray-700"
                     role="menuitem"
                     id="user-menu-item-2"
+                    onClick={async () => {
+                      await fetch("/api/auth/logout/", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                      });
+                    }}
                   >
                     Sign out
                   </a>

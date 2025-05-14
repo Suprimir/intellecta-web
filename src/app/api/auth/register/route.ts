@@ -3,11 +3,12 @@ import { pool } from "@/libs/mysql";
 import bcrypt from "bcrypt";
 import { SendMailConfirmation } from "@/libs/mailService";
 import { randomUUID } from "crypto";
-import { userInput, validateUser } from "@/utils/validateUser";
+import { validateUser } from "@/utils/validateUser";
+import { User } from "@/types/api";
 
 export async function POST(request: Request) {
   try {
-    const user: userInput = await request.json();
+    const user: User = await request.json();
 
     // Validaciones de usuario
     const validationErrors = await validateUser(user);
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
 
     try {
       // Verificamos si ya existe un usuario
-      const existingUsers: userInput[] = await pool.query(
+      const existingUsers: User[] = await pool.query(
         "SELECT * FROM users WHERE username = ? OR email = ?",
         [user.username, user.email]
       );
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
       await pool.end();
 
       if (existingUsers.length > 0) {
-        const existingUser = existingUsers[0] as userInput;
+        const existingUser = existingUsers[0] as User;
         const duplicatedField =
           existingUser.username === user.username ? "username" : "email";
 
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
 
       // Realizamos la inserción de datos
       await pool.query("INSERT INTO users SET ?", {
-        user_ID: userUUID,
+        uuid: userUUID,
         username: user.username,
         email: user.email,
         password: hashedPassword,
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
       await pool.query("INSERT INTO emailToken SET ?", {
         expired_At: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
         token: verifyToken,
-        user_ID: userUUID,
+        uuid: userUUID,
       });
 
       await pool.end();
