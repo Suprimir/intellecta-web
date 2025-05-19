@@ -1,8 +1,4 @@
-export function renderConfirmationEmail(
-  username: string,
-  email: string,
-  token: string
-) {
+export function renderConfirmationEmail(username: string, token: string) {
   return `
 <!DOCTYPE html>
 <html lang="es">
@@ -64,7 +60,7 @@ export function renderConfirmationEmail(
 <body>
     <div class="container">
         <div class="header">
-            <img src="/api/placeholder/120/60" alt="Logo de la empresa">
+            <img src="https://i.imgur.com/NQC96NS.png" alt="Logo de la empresa">
         </div>
         
         <div class="content">

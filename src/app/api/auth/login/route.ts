@@ -12,6 +12,16 @@ export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
 
+    if (!username || !password) {
+      return NextResponse.json(
+        {
+          field: "all",
+          message: "Los campos estan vacios.",
+        },
+        { status: 401 }
+      );
+    }
+
     // Obtenemos los datos del usuario
     const users: User[] = await pool.query(
       "SELECT * FROM users WHERE username = ? LIMIT 1",
@@ -20,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     await pool.end();
 
-    if (!users) {
+    if (users.length === 0) {
       return NextResponse.json(
         { message: "Credenciales inválidas" },
         { status: 401 }

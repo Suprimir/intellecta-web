@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useState, useRef, FormEvent } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import "../styles/NavBar.css";
 import {
@@ -16,76 +16,123 @@ import {
   ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, EyeIcon } from "@heroicons/react/20/solid";
-import Hyperlink from "./common/Hyperlink";
+import Button from "./common/Button";
 import { useAuth } from "@/libs/context/AuthContext";
+import NavBarSkeleton from "./skeletons/NavbarSkeleton";
 
 const products = [
   {
     name: "Tecnología y Programación",
     description: "Crea software y domina herramientas digitales.",
-    href: "#",
+    href: "/courses?category=Programación",
     icon: CommandLineIcon,
   },
   {
     name: "Arte y Diseño",
     description: "Desarrolla tu lado creativo.",
-    href: "#",
+    href: "/courses?category=Arte",
     icon: PaintBrushIcon,
   },
   {
     name: "Negocios y Emprendimiento",
     description: "Aprende a emprender y liderar.",
-    href: "#",
+    href: "/courses?category=Negocios",
     icon: BriefcaseIcon,
   },
   {
     name: "Educación y Desarrollo Personal",
     description: "Mejora tus habilidades y crecimiento personal.",
-    href: "#",
+    href: "/courses?category=Educación",
     icon: BookOpenIcon,
   },
   {
     name: "Idiomas",
     description: "Aprende o mejora un idioma.",
-    href: "#",
+    href: "/courses?category=Idiomas",
     icon: LanguageIcon,
   },
 ];
 const callsToAction = [
-  { name: "Ver todos los cursos", href: "#", icon: EyeIcon },
+  { name: "Ver todos los cursos", href: "/courses", icon: EyeIcon },
+  { name: "Ver mis cursos", href: "/dashboard", icon: BookOpenIcon },
 ];
 
 export default function NavBar() {
+  const pathname = usePathname();
+  const [activeRoute, setActiveRoute] = useState(pathname);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const [navState, setNavState] = useState({
     showLoginButton: false,
     showRegisterButton: false,
+    showSearchBar: false,
   });
 
+  const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const profileButtonRef = useRef<HTMLButtonElement | null>(null);
-  const pathname = usePathname();
   const { user, loadingUser } = useAuth();
 
   useEffect(() => {
-    if (pathname === "/auth/register") {
-      setNavState({
-        showRegisterButton: false,
-        showLoginButton: true,
-      });
-    } else if (pathname === "/auth/login") {
-      setNavState({
-        showRegisterButton: true,
-        showLoginButton: false,
-      });
-    } else {
-      setNavState({
-        showRegisterButton: !user,
-        showLoginButton: !user,
-      });
+    setActiveRoute(pathname);
+  }, [pathname]);
+
+  useEffect(() => {
+    const updateNavState = () => {
+      if (activeRoute === "/auth/register") {
+        setNavState({
+          showRegisterButton: false,
+          showLoginButton: true,
+          showSearchBar: true,
+        });
+      } else if (activeRoute === "/auth/login") {
+        setNavState({
+          showRegisterButton: true,
+          showLoginButton: false,
+          showSearchBar: true,
+        });
+      } else if (activeRoute === "/courses") {
+        setNavState({
+          showRegisterButton: !user,
+          showLoginButton: !user,
+          showSearchBar: false,
+        });
+      } else {
+        setNavState({
+          showRegisterButton: !user,
+          showLoginButton: !user,
+          showSearchBar: true,
+        });
+      }
+    };
+
+    if (!loadingUser) {
+      updateNavState();
+      setLoading(false);
     }
-  }, [pathname, user]);
+  }, [activeRoute, loadingUser, user]);
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      const waitForAuth = () =>
+        new Promise<void>((resolve) => {
+          const interval = setInterval(() => {
+            if (!loadingUser) {
+              clearInterval(interval);
+              resolve();
+            }
+          }, 100);
+        });
+
+      await waitForAuth();
+
+      setLoading(false);
+    };
+
+    loadInitialData();
+  }, [loadingUser]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -115,10 +162,12 @@ export default function NavBar() {
     setProfileMenuOpen(!profileMenuOpen);
   };
 
-  if (loadingUser) {
-    return <div>Cargando...</div>;
-  }
-
+  const handleSearchSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/courses?search=${searchTerm}`);
+    }
+  };
   return (
     <header className="bg-white">
       <nav
@@ -203,108 +252,128 @@ export default function NavBar() {
             </div>
           </div>
 
-          <a href="#" className="text-sm/6 font-semibold text-gray-900">
+          <a
+            href="/certificates"
+            className="text-sm/6 font-semibold text-gray-900"
+          >
             Certificados
           </a>
         </div>
-        <div className="hidden lg:flex lg:flex-1 gap-2 lg:justify-end">
-          <div className="hidden 2xl:flex items-center gap-2 rounded-md border-2 border-[#CDD1DC] text-sm/6 text-[#031B4E] font-semibold px-3 py-1.5">
-            <input placeholder="¿Qué quieres aprender?" className="" />
-            <MagnifyingGlassIcon
-              aria-hidden="true"
-              className="size-5 flex-none group-data-open:rotate-180"
-            />
-          </div>
-          {navState.showLoginButton && (
-            <Hyperlink
-              text="Acceder"
-              href="/auth/login"
-              className="border-2 border-[#0000004D] text-[#000000] text-sm/6"
-            />
-          )}
-          {navState.showRegisterButton && (
-            <Hyperlink
-              text="Crear cuenta"
-              href="/auth/register"
-              className="border-2 border-[#000000B0] bg-[#0000004D] text-white text-sm/6"
-            />
-          )}
-          {user && (
-            <div className="relative flex items-center justify-center ml-3">
-              <a
-                href="/cart"
-                className="p-2 rounded-full transition-all duration-300 hover:bg-gray-100/30 hover:shadow-lg hover:shadow-gray-200/50 flex items-center justify-center"
-              >
-                <ShoppingCartIcon
-                  aria-hidden="true"
-                  className="size-6 text-gray-700 flex-none group-data-open:rotate-180"
-                />
-              </a>
-            </div>
-          )}
-          {user && (
-            <div className="relative ml-3">
-              <div className="">
-                {/*  Boton del profile  */}
-                <button
-                  type="button"
-                  className="relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
-                  id="user-menu-button"
-                  aria-expanded={profileMenuOpen}
-                  aria-haspopup="true"
-                  onClick={toggleProfileMenu}
-                  ref={profileButtonRef}
-                >
-                  <span className="absolute -inset-1.5"></span>
-                  <span className="sr-only">Open user menu</span>
-                  <Image
-                    className="rounded-full"
-                    width="40"
-                    height="40"
-                    src={`/userImages/${user.uuid}.jpeg`}
-                    alt="Profile picture"
+        {loading ? (
+          <NavBarSkeleton />
+        ) : (
+          <div className="hidden lg:flex lg:flex-1 gap-2 lg:justify-end">
+            {navState.showSearchBar && (
+              <div className="hidden 2xl:flex items-center gap-2 rounded-md border-2 border-[#CDD1DC] text-sm/6 text-[#031B4E] font-semibold px-3 py-1.5">
+                <form onSubmit={handleSearchSubmit}>
+                  <input
+                    placeholder="¿Qué quieres aprender?"
+                    className="focus:outline-0"
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                </button>
+                </form>
+                <a href={`/courses?search=${searchTerm}`}>
+                  <MagnifyingGlassIcon
+                    aria-hidden="true"
+                    className="size-5 flex-none group-data-open:rotate-180"
+                  />
+                </a>
               </div>
-              {/*   Dropdown   */}
-              {profileMenuOpen && (
-                <div
-                  className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden"
-                  ref={dropdownRef}
-                  role="menu"
-                  aria-orientation="vertical"
-                  aria-labelledby="user-menu-button"
+            )}
+            {navState.showLoginButton && (
+              <Button
+                text="Acceder"
+                onClick={() => router.push("/auth/login")}
+                className="border-2 border-[#0000004D] text-[#000000] text-sm/6"
+              />
+            )}
+            {navState.showRegisterButton && (
+              <Button
+                text="Crear cuenta"
+                onClick={() => router.push("/auth/register")}
+                className="border-2 border-[#000000B0] bg-[#0000004D] text-white text-sm/6"
+              />
+            )}
+            {user && (
+              <div className="relative flex items-center justify-center ml-3">
+                <a
+                  href="/cart"
+                  className="p-2 rounded-full transition-all duration-300 hover:bg-gray-100/30 hover:shadow-lg hover:shadow-gray-200/50 flex items-center justify-center"
                 >
-                  <a
-                    href={`/profile/${user.uuid}`}
-                    className="block px-4 py-2 text-sm text-gray-700"
-                    role="menuitem"
-                    id="user-menu-item-0"
-                    onClick={(e) => e.stopPropagation()}
+                  <ShoppingCartIcon
+                    aria-hidden="true"
+                    className="size-6 text-gray-700 flex-none group-data-open:rotate-180"
+                  />
+                </a>
+              </div>
+            )}
+            {user && (
+              <div className="relative ml-3">
+                <div className="">
+                  {/*  Boton del profile  */}
+                  <button
+                    type="button"
+                    className="relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
+                    id="user-menu-button"
+                    aria-expanded={profileMenuOpen}
+                    aria-haspopup="true"
+                    onClick={toggleProfileMenu}
+                    ref={profileButtonRef}
                   >
-                    Your Profile
-                  </a>
-                  <a
-                    href="/auth/login"
-                    className="block px-4 py-2 text-sm text-gray-700"
-                    role="menuitem"
-                    id="user-menu-item-2"
-                    onClick={async () => {
-                      await fetch("/api/auth/logout/", {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                      });
-                    }}
-                  >
-                    Sign out
-                  </a>
+                    <span className="absolute -inset-1.5"></span>
+                    <span className="sr-only">Open user menu</span>
+                    <Image
+                      className="rounded-full"
+                      width="40"
+                      height="40"
+                      src={`/userImages/${user.uuid}.jpeg`}
+                      alt="Profile picture"
+                    />
+                  </button>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
+                {/*   Dropdown   */}
+                {profileMenuOpen && (
+                  <div
+                    className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden"
+                    ref={dropdownRef}
+                    role="menu"
+                    aria-orientation="vertical"
+                    aria-labelledby="user-menu-button"
+                  >
+                    <a
+                      href={`/profile/${user.uuid}`}
+                      className="block px-4 py-2 text-sm text-gray-700"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Mi perfil
+                    </a>
+                    <a
+                      href={`/dashboard`}
+                      className="block px-4 py-2 text-sm text-gray-700"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Mis cursos
+                    </a>
+                    <a
+                      href="/auth/login"
+                      className="block px-4 py-2 text-sm text-gray-700"
+                      onClick={async () => {
+                        await fetch("/api/auth/logout/", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                        });
+                      }}
+                    >
+                      Cerrar sesión
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </nav>
       <div id="dialog" className={mobileMenuOpen ? "lg:hidden" : "hidden"}>
         <div className="fixed inset-0 z-10" />

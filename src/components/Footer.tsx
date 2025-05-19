@@ -48,12 +48,18 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-gray-300 transition-colors">
+                <a
+                  href="/certificates"
+                  className="hover:text-gray-300 transition-colors"
+                >
                   Certificación de cursos
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-gray-300 transition-colors">
+                <a
+                  href="/certificates"
+                  className="hover:text-gray-300 transition-colors"
+                >
                   Programas de certificación
                 </a>
               </li>
@@ -64,7 +70,10 @@ export default function Footer() {
             <h3 className="font-semibold text-lg mb-4">Ayuda</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="hover:text-gray-300 transition-colors">
+                <a
+                  href="/help"
+                  className="hover:text-gray-300 transition-colors"
+                >
                   Centro de ayuda
                 </a>
               </li>
@@ -75,7 +84,7 @@ export default function Footer() {
             <h3 className="font-semibold text-lg mb-4">• Síguenos en redes</h3>
             <div className="flex space-x-4">
               <a
-                href="#"
+                href="https://www.facebook.com/FreeFireSA/?locale=es_LA"
                 className="text-white hover:text-gray-300 transition-colors"
               >
                 <svg
@@ -92,7 +101,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/p/DJQH_JVAZUN/?igsh=MWw1NWNqMGZzeWgwMw=="
                 className="text-white hover:text-gray-300 transition-colors"
               >
                 <svg
@@ -109,7 +118,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="#"
+                href="https://x.com/freefirelatino"
                 className="text-white hover:text-gray-300 transition-colors"
               >
                 <svg
@@ -131,14 +140,14 @@ export default function Footer() {
         <div className="max-w-6xl mx-auto flex flex-col items-center">
           <div className="flex space-x-4 mb-4">
             <a
-              href="#"
+              href="/legal"
               className="text-white hover:text-gray-300 transition-colors text-sm"
             >
               Términos y condiciones
             </a>
             <span className="text-white">•</span>
             <a
-              href="#"
+              href="/legal"
               className="text-white hover:text-gray-300 transition-colors text-sm"
             >
               Política de privacidad

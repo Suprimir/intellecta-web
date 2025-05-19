@@ -12,6 +12,7 @@ type RequestBody = {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
+    const uuid = searchParams.get("uuid");
     const limitParam = searchParams.get("limit");
 
     const limit = limitParam ? parseInt(limitParam) : null;
@@ -22,10 +23,65 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const query = limit
-      ? "SELECT * FROM courses LIMIT ?"
-      : "SELECT * FROM courses";
-    const courses = await pool.query(query, limit);
+    let query;
+    let queryParams: any[] = [];
+
+    if (uuid) {
+      query = `SELECT c.id,
+                c.name, 
+                c.description, 
+                c.image, 
+                c.date, 
+                c.duration, 
+                c.rating,
+                c.instructor_ID, 
+                CONCAT_WS(" ", u.name, u.last_name) AS instructor, 
+                c.category_ID, 
+                cat.description AS category_name, 
+                c.price,
+                CASE 
+                    WHEN pc.course_ID IS NOT NULL THEN "purchased"
+                    WHEN sd.course_ID IS NOT NULL THEN "cart"
+                    ELSE ""
+                END AS "location"
+          FROM courses c 
+          JOIN users u ON u.uuid = c.instructor_ID
+          JOIN categories cat ON c.category_ID = cat.id
+          LEFT JOIN shoppingcarts s ON s.uuid = ?
+          LEFT JOIN shoppingcarts_details sd ON sd.shoppingCart_ID = s.id AND sd.course_ID = c.id
+          LEFT JOIN purchased_courses pc ON pc.course_ID = c.id AND pc.user_ID = ?
+          ORDER BY 
+          CASE 
+              WHEN pc.course_ID IS NOT NULL THEN 2 
+              WHEN sd.course_ID IS NOT NULL THEN 1
+              ELSE 0                               
+          END ASC`;
+
+      queryParams = [uuid, uuid];
+    } else {
+      query = `SELECT c.id,
+                c.name, 
+                c.description, 
+                c.image, 
+                c.date, 
+                c.duration, 
+                c.rating,
+                c.instructor_ID, 
+                CONCAT_WS(" ", u.name, u.last_name) AS instructor, 
+                c.category_ID, 
+                cat.description AS category_name, 
+                c.price,
+                "" AS "location"
+          FROM courses c 
+          JOIN users u ON u.uuid = c.instructor_ID
+          JOIN categories cat ON c.category_ID = cat.id`;
+    }
+
+    if (limit !== null) {
+      query += " LIMIT ?";
+      queryParams.push(limit);
+    }
+    const courses: Course[] = await pool.query(query, queryParams);
 
     return NextResponse.json(courses);
   } catch (error: unknown) {
@@ -71,7 +127,7 @@ export async function POST(request: NextRequest) {
         { message: "Falta el valor de duration del curso." },
         { status: 400 }
       );
-    } else if (!course.uuid) {
+    } else if (!course.instructor_ID) {
       return NextResponse.json(
         { message: "Falta el valor de instructorUuid del curso." },
         { status: 400 }
@@ -103,7 +159,7 @@ export async function POST(request: NextRequest) {
       image: course.image,
       date: course.date,
       duration: course.duration,
-      instructor_ID: course.uuid,
+      instructor_ID: course.instructor_ID,
       category_ID: course.category_ID,
     });
 

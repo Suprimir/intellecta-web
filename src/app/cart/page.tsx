@@ -12,11 +12,21 @@ import {
   Play,
   Award,
 } from "lucide-react";
-import { Course, ShoppingCartDetails } from "@/types/api";
+import { Course } from "@/types/api";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+import CheckoutForm from "@/components/CheckoutForm";
+import { useAuth } from "@/libs/context/AuthContext";
+import convertToSubcurrency from "@/libs/convertToSubcurrency";
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
 
 export default function ShoppingCart() {
   const [cartItems, setCartItems] = useState<Course[]>([]);
+  const [checkoutPage, setCheckoutPage] = useState(false);
+  const [amount, setAmount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const { user, loadingUser } = useAuth();
 
   useEffect(() => {
     try {
@@ -28,11 +38,13 @@ export default function ShoppingCart() {
       };
 
       getCartItems();
+      setAmount(total);
       setLoading(false);
     } catch (error: unknown) {
       console.error((error as Error).message);
     }
   }, []);
+
   const removeItem = async (id: number) => {
     const responseRemoveItem = await fetch("/api/cart/remove", {
       method: "POST",
@@ -46,13 +58,20 @@ export default function ShoppingCart() {
     setCartItems(cartItems.filter((item) => item.id !== id));
   };
 
-  const subtotal = 1;
-  const discount = 1; // 10% discount
-  const total = 1;
+  const subtotal = cartItems.reduce((total, item) => {
+    const price =
+      typeof item.price === "number" ? item.price : parseFloat(item.price);
+    return total + price;
+  }, 0);
+  const total = subtotal;
 
   if (loading) {
     return <div>Cargando...</div>;
   }
+
+  const handlePaymentSuccess = () => {
+    alert("¡Pago completado con éxito!");
+  };
 
   return (
     <div className="min-h-screen bg-slate-200">
@@ -107,7 +126,7 @@ export default function ShoppingCart() {
                             {item.name}
                           </h3>
                           <p className="text-base font-semibold text-gray-900">
-                            ${1}
+                            MX${item.price}
                           </p>
                         </div>
 
@@ -115,11 +134,11 @@ export default function ShoppingCart() {
                           <div>
                             <p className="flex items-center">
                               <Award className="h-4 w-4 mr-1" /> Instructor:{" "}
-                              {item.uuid}
+                              {item.instructor}
                             </p>
                             <p className="flex items-center">
                               <Tag className="h-4 w-4 mr-1" />{" "}
-                              {item.category_ID}
+                              {item.category_name}
                             </p>
                             <p className="flex items-center">
                               <Play className="h-4 w-4 mr-1" />
@@ -175,7 +194,7 @@ export default function ShoppingCart() {
                       </p>
                     </div>
                   </div>
-                  <span className="font-semibold">+$9.99</span>
+                  <span className="font-semibold">+MX$39.99</span>
                 </div>
               </div>
             </div>
@@ -190,20 +209,13 @@ export default function ShoppingCart() {
               <div className="space-y-4">
                 <div className="flex justify-between text-base">
                   <span className="text-gray-500">Subtotal</span>
-                  <span className="font-medium">${subtotal.toFixed(2)}</span>
-                </div>
-
-                <div className="flex justify-between text-base">
-                  <span className="text-gray-500">Descuento (10%)</span>
-                  <span className="font-medium text-green-600">
-                    -${discount.toFixed(2)}
-                  </span>
+                  <span className="font-medium">MX${subtotal.toFixed(2)}</span>
                 </div>
 
                 <div className="border-t border-gray-200 pt-4 mt-4">
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>MX${total.toFixed(2)}</span>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">Un solo pago</p>
                 </div>
@@ -221,10 +233,40 @@ export default function ShoppingCart() {
                     Apply
                   </span>
                 </div>*/}
-                <button className="w-full cursor-pointer bg-yellow-500 text-white py-3 px-4 rounded-md hover:bg-yellow-600 flex items-center justify-center">
-                  <CreditCard className="mr-2 h-5 w-5" />
-                  Comprar Ahora
-                </button>
+                {checkoutPage && (
+                  <Elements
+                    stripe={stripePromise}
+                    options={{
+                      mode: "payment",
+                      amount: convertToSubcurrency(Number(total.toFixed(2))),
+                      currency: "mxn",
+                      payment_method_types: ["card"],
+                      appearance: {
+                        theme: "stripe",
+                        variables: {
+                          colorPrimary: "#eab308",
+                          colorBackground: "#ffffff",
+                          borderRadius: "8px",
+                        },
+                      },
+                    }}
+                  >
+                    <CheckoutForm
+                      cartItems={cartItems}
+                      onSuccess={handlePaymentSuccess}
+                      amount={convertToSubcurrency(Number(total.toFixed(2)))}
+                    />
+                  </Elements>
+                )}
+                {!checkoutPage && (
+                  <button
+                    onClick={() => setCheckoutPage(true)}
+                    className="mt-2 w-full cursor-pointer bg-yellow-500 text-white py-3 px-4 rounded-md hover:bg-yellow-600 flex items-center justify-center"
+                  >
+                    <CreditCard className="mr-2 h-5 w-5" />
+                    Comprar Ahora
+                  </button>
+                )}
 
                 <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
                   <BookOpen className="h-4 w-4 mr-1" />

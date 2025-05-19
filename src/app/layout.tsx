@@ -4,6 +4,7 @@ import "./globals.css";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import { AuthProvider } from "@/libs/context/AuthContext";
+import { AlertProvider } from "@/libs/context/AlertContext";
 const inter = Inter({ subsets: ["latin"], weight: "300" });
 
 export const metadata: Metadata = {
@@ -20,9 +21,11 @@ export default function RootLayout({
     <html className="h-full bg-white hydrated" lang="en">
       <body className={`h-full ${inter.className} min-h-screen`}>
         <AuthProvider>
-          <NavBar />
-          {children}
-          <Footer />
+          <AlertProvider>
+            <NavBar />
+            {children}
+            <Footer />
+          </AlertProvider>
         </AuthProvider>
       </body>
     </html>

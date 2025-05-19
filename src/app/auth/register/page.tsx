@@ -1,11 +1,12 @@
-// working on the validations - Luis MPP
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { SignUp } from "@/actions/auth";
+import { useAlert } from "@/libs/context/AlertContext";
 
 interface TouchedFields {
+  name: boolean;
+  lastname: boolean;
   username: boolean;
   email: boolean;
   password: boolean;
@@ -13,12 +14,17 @@ interface TouchedFields {
 }
 
 export default function RegisterPage() {
+  const { showAlert } = useAlert();
+  const [name, setName] = useState("");
+  const [lastname, setLastname] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [touched, setTouched] = useState({
+  const [touched, setTouched] = useState<TouchedFields>({
+    name: false,
+    lastname: false,
     username: false,
     email: false,
     password: false,
@@ -26,230 +32,251 @@ export default function RegisterPage() {
   });
 
   const [errors, setErrors] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const [passValidations, setPassValidations] = useState({
-    mayus: "",
-    numbers: "",
-    symbols: "",
+    name: false,
+    lastname: false,
+    username: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
   });
 
   useEffect(() => {
-    if (username) {
-      setErrors((prev) => ({
-        ...prev,
-        username:
-          username.length > 3
-            ? ""
-            : "El usuario debe tener mas de 3 caracteres.",
-      }));
-    }
+    setErrors((prev) => ({
+      ...prev,
+      name: name.length <= 0,
+    }));
+  }, [name]);
+
+  useEffect(() => {
+    setErrors((prev) => ({
+      ...prev,
+      lastname: lastname.length <= 0,
+    }));
+  }, [lastname]);
+
+  useEffect(() => {
+    setErrors((prev) => ({
+      ...prev,
+      username: username.length <= 8,
+    }));
   }, [username]);
 
   useEffect(() => {
-    if (email) {
-      const isEmailValid = /\S+[@]+\S+[.]+\S+/.test(email);
-      setErrors((prev) => ({
-        ...prev,
-        email: isEmailValid ? "" : "El email es invalido.",
-      }));
-    }
+    setErrors((prev) => ({
+      ...prev,
+      email: !/\S+[@]+\S+[.]+\S+/.test(email),
+    }));
   }, [email]);
 
   useEffect(() => {
-    if (password) {
-      const isPassValidLength = password.length > 8;
-      const isPassValidMayus = /[A-Z]+/.test(password);
-      const isPassValidNumbers = /[0-9]+/.test(password);
-      const isPassValidSymbols = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(
-        password
-      );
-
-      setErrors((prev) => ({
-        ...prev,
-        password: isPassValidLength
-          ? ""
-          : "La contraseña debe ser mayor a 8 caracteres.",
-      }));
-
-      if (isPassValidLength) {
-        setPassValidations((prev) => ({
-          ...prev,
-          mayus: isPassValidMayus ? "" : "Colocar mayusculas [A-Z].",
-          numbers: isPassValidNumbers ? "" : "Colocar numeros [0-9].",
-          symbols: isPassValidSymbols ? "" : "Colocar simbolos [@!#%].",
-        }));
-      }
-    }
+    setErrors((prev) => ({
+      ...prev,
+      password: password.length <= 8,
+    }));
   }, [password]);
 
   useEffect(() => {
-    if (confirmPassword) {
-      setErrors((prev) => ({
-        ...prev,
-        confirmPassword:
-          confirmPassword == password ? "" : "Las contraseñas no coinciden.",
-      }));
-    }
-  }, [confirmPassword]);
+    setErrors((prev) => ({
+      ...prev,
+      confirmPassword: password !== confirmPassword,
+    }));
+  }, [confirmPassword, password]);
 
   const handleBlur = (field: keyof TouchedFields) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     setTouched({
+      name: true,
+      lastname: true,
       username: true,
       email: true,
       password: true,
       confirmPassword: true,
     });
 
-    if (Object.values(errors).some((error) => error != "")) {
-      return;
-    }
+    const validationErrors = {
+      name: name.length <= 0,
+      lastname: lastname.length <= 0,
+      username: username.length <= 8,
+      email: !/\S+[@]+\S+[.]+\S+/.test(email),
+      password: password.length <= 8,
+      confirmPassword: password !== confirmPassword,
+    };
 
-    const signUpSuccesfully = await SignUp(formData);
+    setErrors(validationErrors);
 
-    if (signUpSuccesfully.status == 200) {
-      alert("Registro exitoso");
+    const formData = new FormData(e.currentTarget);
+    const signUpSuccessfully = await SignUp(formData);
+    const data = await signUpSuccessfully.json();
+
+    if (signUpSuccessfully.status === 200) {
+      showAlert(
+        "Verifica tu correo electronico.",
+        "success",
+        "Registro exitoso",
+        5000
+      );
+    } else {
+      showAlert(data[0].message, "error", "Error", 5000);
     }
   };
 
+  const getInputBorderClass = (fieldName: keyof typeof errors) => {
+    return touched[fieldName as keyof TouchedFields] && errors[fieldName]
+      ? "border-red-500 focus:ring-red-300"
+      : "border-gray-300 focus:ring-yellow-400";
+  };
+
   return (
-    <div className="min-h-[calc(100vh-6.6vh)] bg-gradient-to-br from-[#FFBD00] to-[#ffeaaf] flex items-center justify-center">
-      <form
-        action={handleSubmit}
-        className="w-full mx-4 md:w-1/3 bg-white rounded-2xl p-8"
-      >
-        <h1 className="font-bold text-slate-300 text-4xl mb-4 text-center">
-          Register
-        </h1>
-
-        {/* Username */}
-        <div className="mb-4">
-          <label
-            htmlFor="username"
-            className="text-black mb-2 text-xl font-extrabold ms-2 block"
-          >
-            Username
-          </label>
-          <input
-            id="username"
-            name="username"
-            type="text"
-            onChange={(e) => setUsername(e.target.value)}
-            onBlur={() => handleBlur("username")}
-            className="p-3 rounded bg-[#DFDCDC] text-slate-300 w-full"
-          />
-          {touched.username && errors.username && (
-            <p className="text-sm text-red-500 mt-1">{errors.username}</p>
-          )}
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-300 to-yellow-500 px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 space-y-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-800">Crea tu cuenta</h1>
+          <p className="text-gray-500 text-sm">
+            Únete a Intellecta y accede a todos los cursos
+          </p>
         </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex gap-3">
+            <div className="w-1/2">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Nombre
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={() => handleBlur("name")}
+                className={`mt-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${getInputBorderClass(
+                  "name"
+                )}`}
+              />
+            </div>
+            <div className="w-1/2">
+              <label
+                htmlFor="last_name"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Apellido
+              </label>
+              <input
+                id="lastname"
+                name="lastname"
+                type="text"
+                value={lastname}
+                onChange={(e) => setLastname(e.target.value)}
+                onBlur={() => handleBlur("lastname")}
+                className={`mt-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${getInputBorderClass(
+                  "lastname"
+                )}`}
+              />
+            </div>
+          </div>
 
-        {/* Email */}
-        <div className="mb-4">
-          <label
-            htmlFor="email"
-            className="text-black mb-2 text-xl font-extrabold ms-2 block"
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Nombre de usuario
+            </label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onBlur={() => handleBlur("username")}
+              className={`mt-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${getInputBorderClass(
+                "username"
+              )}`}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Correo electrónico
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => handleBlur("email")}
+              className={`mt-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${getInputBorderClass(
+                "email"
+              )}`}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Contraseña
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => handleBlur("password")}
+              className={`mt-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${getInputBorderClass(
+                "password"
+              )}`}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Confirmar contraseña
+            </label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              onBlur={() => handleBlur("confirmPassword")}
+              className={`mt-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${getInputBorderClass(
+                "confirmPassword"
+              )}`}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition"
           >
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            onChange={(e) => setEmail(e.target.value)}
-            onBlur={() => handleBlur("email")}
-            className="p-3 rounded bg-[#DFDCDC] text-slate-300 w-full"
-          />
-          {touched.email && errors.email && (
-            <p className="text-sm text-red-500 mt-1">{errors.email}</p>
-          )}
-        </div>
+            Registrarse
+          </button>
+        </form>
 
-        {/* Password */}
-        <div className="mb-4">
-          <label
-            htmlFor="password"
-            className="text-black mb-2 text-xl font-extrabold ms-2 block"
-          >
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            onChange={(e) => setPassword(e.target.value)}
-            onBlur={() => handleBlur("password")}
-            className="p-3 rounded bg-[#DFDCDC] text-slate-300 w-full"
-          />
-          {touched.password && errors.password && (
-            <p className="text-sm text-red-500 mt-1">{errors.password}</p>
-          )}
-          {(passValidations.mayus ||
-            passValidations.numbers ||
-            passValidations.symbols) &&
-            !errors.password && (
-              <div className="mt-2">
-                <p className="text-red-500 text-sm">
-                  Puedes mejorar tu contraseña de las siguientes maneras:
-                </p>
-                <ul className="list-disc pl-5 mt-1">
-                  {passValidations.mayus && (
-                    <li className="text-sm text-red-500">
-                      {passValidations.mayus}
-                    </li>
-                  )}
-                  {passValidations.numbers && (
-                    <li className="text-sm text-red-500">
-                      {passValidations.numbers}
-                    </li>
-                  )}
-                  {passValidations.symbols && (
-                    <li className="text-sm text-red-500">
-                      {passValidations.symbols}
-                    </li>
-                  )}
-                </ul>
-              </div>
-            )}
+        <div className="text-center text-sm text-gray-600">
+          ¿Ya tienes cuenta?{" "}
+          <a href="/auth/login" className="text-yellow-600 hover:underline">
+            Inicia sesión
+          </a>
         </div>
-
-        {/* Confirm Password */}
-        <div className="mb-4">
-          <label
-            htmlFor="confirmPassword"
-            className="text-black mb-2 text-xl font-extrabold ms-2 block"
-          >
-            Confirm Password
-          </label>
-          <input
-            id="confirmPassword"
-            name="confirmPassword"
-            type="password"
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            onBlur={() => handleBlur("confirmPassword")}
-            className="p-3 rounded bg-[#DFDCDC] text-slate-300 w-full"
-          />
-          {touched.confirmPassword && errors.confirmPassword && (
-            <p className="text-sm text-red-500 mt-1">
-              {errors.confirmPassword}
-            </p>
-          )}
-        </div>
-
-        <button
-          type="submit"
-          className="bg-blue-500 text-white p-3 my-4 w-full rounded-lg font-bold hover:bg-blue-600 transition-colors"
-        >
-          Register
-        </button>
-      </form>
-    </div>
+      </div>
+    </main>
   );
 }

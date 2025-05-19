@@ -15,7 +15,6 @@ export async function middleware(request: NextRequest) {
       sessionToken,
       new TextEncoder().encode(JWT_SECRET)
     );
-    console.log(payload);
     return NextResponse.next();
   } catch (error: any) {
     console.log(error.message);
@@ -24,5 +23,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard"],
+  matcher: ["/dashboard", "/payment-succes", "/cart", "/profile"],
 };

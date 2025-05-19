@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
-import { NextResponse } from "next/server";
 
 export async function SignUp(formData: FormData) {
+  const name = formData.get("name");
+  const lastname = formData.get("lastname");
   const username = formData.get("username");
   const email = formData.get("email");
   const password = formData.get("password");
@@ -9,6 +10,8 @@ export async function SignUp(formData: FormData) {
   const response = await fetch("/api/auth/register", {
     method: "POST",
     body: JSON.stringify({
+      name,
+      lastname,
       username,
       email,
       password,
@@ -18,7 +21,7 @@ export async function SignUp(formData: FormData) {
     },
   });
 
-  return NextResponse.json(response);
+  return response;
 }
 
 export async function LogIn(formData: FormData) {
@@ -36,9 +39,5 @@ export async function LogIn(formData: FormData) {
     },
   });
 
-  console.log(response);
-
-  if (response.ok) {
-    redirect("/dashboard");
-  }
+  return response;
 }

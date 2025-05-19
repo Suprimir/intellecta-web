@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const shoppingCartID = (await getShoppingCart(user.uuid)).id;
 
     const courses: Course[] = await pool.query(
-      "SELECT c.id, c.name, c.description, c.image, c.date, c.duration, c.instructor_ID, c.category_ID FROM courses c JOIN shoppingcarts_details sd ON sd.course_ID = c.id WHERE sd.shoppingCart_ID = ?",
+      "SELECT * FROM coursesCartFrontend WHERE shoppingCart_ID = ?",
       shoppingCartID
     );
 

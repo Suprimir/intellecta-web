@@ -1,5 +1,6 @@
 import { User } from "@/types/api";
 import { renderConfirmationEmail } from "@/utils/renderConfirmationEmail";
+import { renderForgotPasswordEmail } from "@/utils/renderForgotPasswordEmail";
 
 const nodemailer = require("nodemailer");
 
@@ -22,6 +23,16 @@ export async function SendMailConfirmation(user: User, token: string) {
     to: user.email,
     subject: "Confirma tu Correo - Intellecta",
     text: "Intellecta Web APP",
-    html: renderConfirmationEmail(user.username, user.email, token),
+    html: renderConfirmationEmail(user.username, token),
+  });
+}
+
+export async function SendMailForgotPassword(user: User, token: string) {
+  await transporter.sendMail({
+    from: '"Intellecta" <intellectawebapp@gmail.com>',
+    to: user.email,
+    subject: "Restablece tu contraseña - Intellecta",
+    text: "Intellecta Web APP",
+    html: renderForgotPasswordEmail(user.username, token),
   });
 }

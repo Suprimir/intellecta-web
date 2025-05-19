@@ -1,52 +1,50 @@
 "use client";
 
 import Image from "next/image";
-import Hyperlink from "@/components/common/Hyperlink";
+import { useRouter } from "next/navigation";
 import CoursesMainPage from "@/components/CoursesMainPage";
 import { AcademicCapIcon, StarIcon } from "@heroicons/react/24/outline";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/libs/context/AuthContext";
 import { Course } from "@/types/api";
+import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
+import Button from "@/components/common/Button";
 
 export default function HomePage() {
+  const router = useRouter();
   const { user, loadingUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [courses, setCourses] = useState<Course[]>([]);
-  let coursesLoaded = false;
-
-  async function getCourses() {
-    const response = await fetch("/api/courses?limit=8");
-    const coursesJson = await response.json();
-    return coursesJson;
-  }
 
   useEffect(() => {
-    const loadMainCourses = async () => {
+    const loadInitialData = async () => {
       try {
-        const mainCourses: Course[] = await getCourses();
-        setCourses(mainCourses);
-      } catch (error: unknown) {
-        console.error((error as Error).message);
+        const res = await fetch("/api/courses?limit=8");
+        const data = await res.json();
+        setCourses(data);
+      } catch (err) {
+        console.error("Error al inciar los datos:", err);
+      } finally {
+        const waitForAuth = () =>
+          new Promise<void>((resolve) => {
+            const interval = setInterval(() => {
+              if (!loadingUser) {
+                clearInterval(interval);
+                resolve();
+              }
+            }, 100);
+          });
+
+        await waitForAuth();
+        setLoading(false);
       }
     };
 
-    loadMainCourses();
-
-    coursesLoaded = true;
-  }, []);
-
-  useEffect(() => {
-    try {
-      if (coursesLoaded && loadingUser) {
-        setLoading(false);
-      }
-    } catch (error: unknown) {
-      console.error((error as Error).message);
-    }
+    loadInitialData();
   }, [loadingUser]);
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return <HomeSkeleton />;
   }
 
   return (
@@ -59,16 +57,16 @@ export default function HomePage() {
                 Contamos con +20 cursos con certificados en diversas áreas
               </h1>
               {user && (
-                <Hyperlink
-                  text="Dashboard"
-                  href="/dashboard"
+                <Button
+                  text="Ir a mis cursos"
+                  onClick={() => router.push("/dashboard")}
                   className="bg-black text-white font-bold py-3 px-6 rounded-lg text-lg md:text-2xl hover:bg-gray-800 transition-colors whitespace-nowrap"
                 />
               )}
               {!user && (
-                <Hyperlink
+                <Button
                   text="Regístrate gratis"
-                  href="/auth/register"
+                  onClick={() => router.push("/auth/register")}
                   className="bg-black text-white font-bold py-3 px-6 rounded-lg text-lg md:text-2xl hover:bg-gray-800 transition-colors whitespace-nowrap"
                 />
               )}
@@ -110,7 +108,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-
       <CoursesMainPage courses={courses} />
       <div className="col-span-3 row-start-4 bg-white">
         <div className="flex flex-col md:flex-row items-center justify-between max-w-6xl mx-auto px-4 py-12 gap-8">
@@ -154,7 +151,7 @@ export default function HomePage() {
 
               <div>
                 <a
-                  href="#"
+                  href="/certificates"
                   className="text-teal-500 font-medium hover:text-teal-600 transition-colors"
                 >
                   Saber más
@@ -176,29 +173,33 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-      <div className="col-span-3 row-start-6">
-        <div className="w-full bg-yellow-200 py-16 px-4 text-center">
-          <div className="max-w-3xl mx-auto space-y-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-center">
-              Únete a más de 8 millones de estudiantes
-              <br className="hidden md:block" />
-              que aprenden y se certifican con
-              <br className="hidden md:block" />
-              INTELLECTA
-            </h2>
+      {!user && (
+        <div className="col-span-3 row-start-6">
+          <div className="w-full bg-yellow-200 py-16 px-4 text-center">
+            <div className="max-w-3xl mx-auto space-y-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-center">
+                Únete a más de 8 millones de estudiantes
+                <br className="hidden md:block" />
+                que aprenden y se certifican con
+                <br className="hidden md:block" />
+                INTELLECTA
+              </h2>
 
-            <div>
-              <button className="bg-teal-600 hover:bg-teal-700 text-white py-3 px-6 rounded-md border border-teal-700 transition-colors duration-300 font-medium">
-                Crear cuenta gratis
-              </button>
+              <div>
+                <Button
+                  onClick={() => router.push("/auth/register")}
+                  text="Crear cuenta gratis"
+                  className="bg-teal-600 hover:bg-teal-700 text-white py-3 px-6 rounded-md border border-teal-700 transition-colors duration-300 font-medium"
+                />
+              </div>
+
+              <p className="text-sm text-gray-700">
+                Acceso gratis por siempre, sin límites de tiempo.
+              </p>
             </div>
-
-            <p className="text-sm text-gray-700">
-              Acceso gratis por siempre, sin límites de tiempo.
-            </p>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
