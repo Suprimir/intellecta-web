@@ -66,6 +66,25 @@ export type OrderDetails = {
   course_ID: number | undefined;
 };
 
+export type Content = {
+  unit_ID: number | undefined;
+  course_ID: number | undefined;
+  unit_Title: number | undefined;
+  unit_Number: number | undefined;
+  content_ID: number | undefined;
+  title: string | undefined;
+  description: string | undefined;
+  media_Path: string | undefined;
+  document_Path: string | undefined;
+};
+
+export type UnitCourse = {
+  id: number | undefined;
+  unit_number: number | undefined;
+  course_ID: number | undefined;
+  title: string | undefined;
+};
+
 export type PurchasedCourses = {
   id: number | undefined;
   user_ID: string | undefined;

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
 import { validatePermissions } from "@/utils/validatePermissions";
-import { contentInput, validateContents } from "@/utils/validateContents";
+import { validateContents } from "@/utils/validateContents";
+import { Content } from "@/types/api";
 
 type RequestBody = {
   insertId: number;
@@ -10,10 +11,12 @@ type RequestBody = {
 
 export async function GET() {
   try {
-    const result = await pool.query("SELECT * FROM contents");
+    const contents: Content[] = await pool.query(
+      "SELECT * FROM contentsFrontend"
+    );
 
     pool.end();
-    return NextResponse.json(result);
+    return NextResponse.json(contents);
   } catch (error: unknown) {
     console.log(error);
     return NextResponse.json(
@@ -29,7 +32,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const content: contentInput = await request.json();
+    const content: Content = await request.json();
 
     if (await validatePermissions(request, true)) {
       return NextResponse.json(

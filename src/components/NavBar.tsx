@@ -383,11 +383,12 @@ export default function NavBar() {
         >
           <div className="flex items-center justify-between">
             <a href="#" className="-m-1.5 p-1.5">
-              <span className="sr-only">Your Company</span>
-              <img
-                alt=""
-                src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-                className="h-8 w-auto"
+              <span className="sr-only">Intellecta</span>
+              <Image
+                src={"/intellecta-logo.svg"}
+                alt="Intellecta logo"
+                width={100}
+                height={100}
               />
             </a>
             <button
@@ -425,10 +426,10 @@ export default function NavBar() {
               </div>
               <div className="py-6">
                 <a
-                  href="#"
+                  href="/auth/login"
                   className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                 >
-                  Log in
+                  Iniciar sesión
                 </a>
               </div>
             </div>

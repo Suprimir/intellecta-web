@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, ReactNode, JSX } from "react";
 
-// Definición de tipos
 type AlertType = "info" | "success" | "warning" | "error" | "teal";
 
 interface Alert {
@@ -58,7 +57,6 @@ export function AlertProvider({ children }: AlertProviderProps): JSX.Element {
     const newAlert: Alert = { id, message, type, title, duration };
     setAlerts((prev) => [...prev, newAlert]);
 
-    // Si se especifica una duración, la alerta se ocultará automáticamente
     if (duration) {
       setTimeout(() => {
         hideAlert(id);
@@ -80,7 +78,6 @@ export function AlertProvider({ children }: AlertProviderProps): JSX.Element {
   );
 }
 
-// Hook personalizado para acceder al contexto de alertas
 export function useAlert(): AlertContextType {
   const context = React.useContext(AlertContext);
   if (!context) {
@@ -89,7 +86,6 @@ export function useAlert(): AlertContextType {
   return context;
 }
 
-// Componente que contiene y muestra todas las alertas activas
 function AlertContainer({
   alerts,
   onClose,
@@ -112,7 +108,6 @@ function AlertContainer({
   );
 }
 
-// Componente de alerta individual
 function Alert({
   id,
   type = "info",
@@ -137,7 +132,6 @@ function Alert({
 
   const handleClose = (): void => {
     setIsExiting(true);
-    // Esperar a que termine la animación antes de quitar el elemento
     setTimeout(() => {
       onClose(id);
     }, 300);

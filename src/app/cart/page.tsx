@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import {
   Trash2,
   ArrowLeft,
-  ShoppingBag,
-  Truck,
   Tag,
   CreditCard,
   BookOpen,

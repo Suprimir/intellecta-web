@@ -1,31 +1,25 @@
 "use server";
 
 import { pool } from "@/libs/mysql";
-
-export interface contentInput {
-  content_ID: number;
-  course_ID: number;
-  description: string;
-  documentPath?: string;
-}
+import { Content } from "@/types/api";
 
 export interface contentErrors {
   field: string;
   message: string;
 }
 
-export async function validateContents(data: contentInput) {
+export async function validateContents(data: Content) {
   const errors: contentErrors[] = [];
 
   // El curso que seleccionaste no existe
-  const courseExists: [] = await pool.query(
-    "SELECT 1 FROM courses WHERE course_ID = ?",
-    data.course_ID
+  const unitExists: [] = await pool.query(
+    "SELECT 1 FROM units_courses WHERE id = ?",
+    data.unit_ID
   );
 
   pool.end();
 
-  if (!(courseExists.length > 0)) {
+  if (!(unitExists.length > 0)) {
     errors.push({ field: "course_ID", message: "El curso no existe" });
     return errors;
   }

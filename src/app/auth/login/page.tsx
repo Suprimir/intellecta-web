@@ -111,7 +111,7 @@ export default function LoginPage() {
               className={`mt-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${getInputBorderClass(
                 "username"
               )}`}
-              placeholder="ej: maria123"
+              placeholder="ej: esotilin123"
             />
           </div>
 

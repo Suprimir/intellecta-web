@@ -1,4 +1,4 @@
--- Active: 1742011190350@@127.0.0.1@3306@intellecta_database
+-- Active: 1733150496575@@127.0.0.1@3306@intellecta_database
 CREATE DATABASE intellecta_database;
 USE intellecta_database;
 
@@ -95,13 +95,23 @@ CREATE TABLE payments (
     user_ID VARCHAR(100) NOT NULL
 );
 
+
+CREATE TABLE units_courses (
+    id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    unit_number INT NOT NULL,
+    course_ID INT NOT NULL,
+    title VARCHAR(128) NOT NULL,
+    UNIQUE(unit_number, course_ID)
+);
+
 CREATE TABLE contents (
  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
- course_ID INT NOT NULL,
+ unit_ID INT NOT NULL,
  title VARCHAR(100),
  description TEXT,
+ media_Path TEXT,
  document_Path TEXT, 
- foreign key (course_ID) references courses (id) on delete cascade
+ foreign key (unit_ID) references units_courses (id) on delete cascade
 );
  
 CREATE TABLE messages ( 
@@ -148,6 +158,9 @@ SELECT * FROM courses c JOIN shoppingcarts_details sd ON sd.course_ID = c.id WHE
 
 SELECT c.id, c.name, c.description, c.price, c.image, c.date, c.duration, c.instructor_ID, c.category_ID FROM courses c JOIN shoppingcarts_details sd ON sd.course_ID = c.id WHERE sd.shoppingCart_ID = 1;
 
+USE intellecta_database;
+
+
 CREATE VIEW coursesFrontend AS
 SELECT c.id, c.name, c.description, c.image, c.`date`, c.duration, c.`instructor_ID`, CONCAT_WS(" ", u.name, u.last_name) AS instructor, c.`category_ID`, cat.description AS category_name, c.price 
 FROM courses c 
@@ -159,8 +172,18 @@ SELECT c.id, c.name, c.description, c.price, c.image, c.date, c.duration, c.inst
 FROM coursesfrontend c 
 JOIN shoppingcarts_details sd ON sd.course_ID = c.id;
 
+
+SELECT c.id, c.name, c.description, c.price, c.image, c.date, c.duration, c.instructor_ID, c.instructor, c.category_ID, c.category_name, sd.`shoppingCart_ID`
+FROM coursesfrontend c 
+JOIN shoppingcarts_details sd ON sd.course_ID = c.id;
 SELECT * FROM coursesfrontend;
 
+SELECT * FROM courses;
+
+select * from shoppingcarts_details;
+
+SELECT * FROM users;
+SELECT * from coursescartfrontend where `shoppingCart_ID` =1;
 SELECT * FROM purchased_courses;
 
 SELECT c.id,
@@ -188,4 +211,15 @@ DELETE FROM shoppingcarts_details
 WHERE id IN (8) 
 AND shoppingCart_ID = 1;
 
-UPDATE users SET password = "xd" WHERE uuid =
+CREATE VIEW contentsFrontend AS
+SELECT uc.id AS unit_ID, 
+uc.course_ID, uc.title as unit_Title, 
+uc.unit_number as unit_Number, 
+c.id as content_ID, 
+c.title, c.description, 
+c.media_Path, c.document_Path
+FROM units_courses uc
+JOIN contents c ON c.unit_ID = uc.id;
+
+use intellecta_database;
+SELECT * FROM contentsfrontend;
