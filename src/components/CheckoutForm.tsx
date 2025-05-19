@@ -28,7 +28,6 @@ export default function CheckoutForm({
   const { user } = useAuth();
 
   useEffect(() => {
-    const uuid = user?.uuid;
     fetch("/api/checkout", {
       method: "POST",
       headers: {
@@ -37,7 +36,7 @@ export default function CheckoutForm({
       body: JSON.stringify({
         amount: amount,
         courses: cartItems,
-        uuid,
+        user,
       }),
     })
       .then((response) => response.json())
@@ -65,6 +64,7 @@ export default function CheckoutForm({
       clientSecret,
       confirmParams: {
         return_url: `http://localhost:3000/payment-succes?amount=${amount}`,
+        receipt_email: `${user?.email}`,
       },
     });
 

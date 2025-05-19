@@ -1,10 +1,16 @@
+import { User } from "@/types/api";
 import { NextRequest, NextResponse } from "next/server";
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request: NextRequest) {
   try {
-    const { amount, uuid, courses } = await request.json();
-    if (!uuid || !courses || !Array.isArray(courses) || courses.length === 0) {
+    const { amount, user, courses } = await request.json();
+    if (
+      !user.uuid ||
+      !courses ||
+      !Array.isArray(courses) ||
+      courses.length === 0
+    ) {
       return NextResponse.json(
         { error: "Se requiere uuid y al menos un curso" },
         { status: 400 }
@@ -15,8 +21,9 @@ export async function POST(request: NextRequest) {
       amount: amount,
       currency: "mxn",
       payment_method_types: ["card"],
+      receipt_email: `${(user as User).email}`,
       metadata: {
-        uuid,
+        uuid: (user as User).uuid,
         courses: JSON.stringify(courses.map((c: any) => c.id)),
       },
       description: `Compra de curso(s): ${courses

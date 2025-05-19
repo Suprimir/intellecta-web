@@ -33,6 +33,7 @@ CREATE TABLE categories (
  description VARCHAR(25)
 );
 
+
 CREATE TABLE courses (
  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
  name VARCHAR(50) NOT NULL,
