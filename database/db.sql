@@ -1,5 +1,4 @@
--- Active: 1733150496575@@127.0.0.1@3306@intellecta_database
-CREATE DATABASE intellecta_database;
+-- Active: 1742011190350@@127.0.0.1@3306@intellecta_database
 USE intellecta_database;
 
 CREATE TABLE users (
@@ -105,15 +104,15 @@ CREATE TABLE units_courses (
 );
 
 CREATE TABLE contents (
- id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
+ id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
  unit_ID INT NOT NULL,
- title VARCHAR(100),
+    order_number INT NOT NULL,
  description TEXT,
  media_Path TEXT,
  document_Path TEXT, 
  foreign key (unit_ID) references units_courses (id) on delete cascade
 );
- 
+
 CREATE TABLE messages ( 
  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
  receiver_User_ID VARCHAR(100) NOT NULL, 
@@ -223,3 +222,13 @@ JOIN contents c ON c.unit_ID = uc.id;
 
 use intellecta_database;
 SELECT * FROM contentsfrontend;
+
+
+SELECT c.id, c.name, c.description, c.image, c.`date`, c.duration, c.`instructor_ID`, CONCAT_WS(" ", u.name, u.last_name) AS instructor, c.`category_ID`, cat.description AS category_name, c.price 
+FROM courses c 
+JOIN users u ON u.uuid = c.`instructor_ID`
+JOIN categories cat ON c.`category_ID` = cat.id
+WHERE c.`instructor_ID` = "2e176783-2564-43f2-90d6-b16ecc3fc3bc";
+
+
+SELECT * FROM coursesfrontend;

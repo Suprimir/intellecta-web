@@ -1,5 +1,13 @@
+// Ruta: /api/courses/getByID/[courseId]/contents
+
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
+import {
+  Content,
+  Course,
+  CourseWithUnitContent,
+  UnitCourse,
+} from "@/types/api";
 
 export async function GET(
   request: NextRequest,
@@ -7,19 +15,23 @@ export async function GET(
 ) {
   const { courseId } = await params;
 
-  console.log(courseId);
   if (!courseId || isNaN(Number(courseId))) {
     return NextResponse.json({ message: "courseId invalido" }, { status: 400 });
   }
 
+  const course: Course[] = await pool.query(
+    "SELECT * FROM coursesFrontend WHERE id = ?",
+    [courseId]
+  );
+
   try {
-    const units: [] = await pool.query(
+    const units: UnitCourse[] = await pool.query(
       "SELECT * FROM units_courses WHERE course_ID = ? ORDER BY unit_number ASC",
       [courseId]
     );
 
     const unitIds = units.map((unit: any) => unit.id);
-    let contents: [] = [];
+    let contents: Content[];
 
     if (unitIds.length > 0) {
       contents = await pool.query(
@@ -30,10 +42,17 @@ export async function GET(
       );
     }
 
-    const unitsWithContents = units.map((unit: any) => ({
-      ...unit,
-      contents: contents.filter((c: any) => c.unit_ID === unit.id),
-    }));
+    const unitsWithContents: CourseWithUnitContent[] = course.map(
+      (course: Course) => ({
+        ...course,
+        units: units.map((unit: UnitCourse) => ({
+          ...unit,
+          contents: contents.filter(
+            (content: Content) => content.unit_ID === unit.id
+          ),
+        })),
+      })
+    );
 
     await pool.end();
 

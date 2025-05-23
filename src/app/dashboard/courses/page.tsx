@@ -72,20 +72,26 @@ export default function CourseContentPage() {
 
   return (
     <div className="flex h-screen">
-      <div className="flex-1 p-6 overflow-y-auto bg-gray-100">
+      <div className="flex-1 p-8 overflow-y-auto bg-gray-100">
         {selectedContent ? (
-          <div>
-            <h2 className="text-2xl font-bold mb-2">{selectedContent.title}</h2>
-            <p className="mb-4 text-gray-700">{selectedContent.description}</p>
+          <div className="space-y-4">
             {selectedContent.media_Path && (
               <video
                 controls
-                className="w-[1280px] h-[568px] mb-4 rounded-2xl bg-black"
+                className="w-[100%] h-[56vh] mb-4 rounded-2xl bg-black"
               >
                 <source src={selectedContent.media_Path} type="video/mp4" />
                 Tu navegador no soporta la reproducción de video.
               </video>
             )}
+            <div className="bg-gray-200 p-4 rounded-2xl h-full">
+              <h2 className="text-2xl font-bold mb-2">
+                {selectedContent.title}
+              </h2>
+              <p className="mb-4 text-gray-700">
+                {selectedContent.description}
+              </p>
+            </div>
             {selectedContent.document_Path && (
               <a
                 href={selectedContent.document_Path}
@@ -104,19 +110,19 @@ export default function CourseContentPage() {
         )}
       </div>
 
-      <div className="w-1/3 overflow-y-auto p-4 bg-gray-100">
-        <div className="bg-gray-200 h-[100%] p-8 rounded-2xl">
-          <h2 className="text-xl font-bold mb-4">Contenido del curso</h2>
+      <div className="w-1/3 overflow-y-auto p-8 bg-gray[#f6f7f9]">
+        <div className="bg-gray-200 h-[100%] rounded-2xl">
+          <h2 className="text-xl font-bold mb-4 p-8">Contenido del curso</h2>
           {units.map((unit, index) => (
-            <div key={unit.id} className="mb-4">
+            <div key={unit.id} className="mb-4 bg-gray[#f6f7f9]">
               <button
                 onClick={() => handleUnitClick(index)}
-                className="text-left w-full font-semibold text-purple-700 hover:underline"
+                className="text-left w-full font-semibold text-purple-700 hover:underline pl-8 py-4"
               >
                 Sección {unit.unit_number}: {unit.title}
               </button>
               {selectedUnitIndex === index && (
-                <ul className="ml-4 mt-2">
+                <ul className="pl-8 py-2 bg-white">
                   {unit.contents.map((content) => (
                     <li key={content.id}>
                       <button

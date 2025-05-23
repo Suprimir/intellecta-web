@@ -70,7 +70,7 @@ export type Content = {
   unit_ID: number | undefined;
   course_ID: number | undefined;
   unit_Title: number | undefined;
-  unit_Number: number | undefined;
+  order_number: number | undefined;
   content_ID: number | undefined;
   title: string | undefined;
   description: string | undefined;
@@ -90,4 +90,12 @@ export type PurchasedCourses = {
   user_ID: string | undefined;
   course_ID: number | undefined;
   purchase_date: Date | undefined;
+};
+
+export type UnitWithContent = UnitCourse & {
+  contents: Content[];
+};
+
+export type CourseWithUnitContent = Course & {
+  units: UnitWithContent[];
 };

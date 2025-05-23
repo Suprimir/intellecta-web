@@ -3,6 +3,8 @@ import { pool } from "@/libs/mysql";
 import { validateCourses } from "@/utils/validateCourses";
 import { validatePermissions } from "@/utils/validatePermissions";
 import { Course } from "@/types/api";
+import { writeFile, mkdir, readdir, unlink } from "fs/promises";
+import path from "path";
 
 type RequestBody = {
   insertId: number;
@@ -178,6 +180,74 @@ export async function POST(request: NextRequest) {
       {
         status: 500,
       }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  const formData = await request.formData();
+
+  const id = formData.get("id");
+  const imageFile = formData.get("file") as File;
+  const name = formData.get("title");
+  const description = formData.get("description");
+  const price = formData.get("price");
+
+  try {
+    const uploadDir = path.join(process.cwd(), "public", "coursesImages");
+
+    await mkdir(uploadDir, { recursive: true });
+
+    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"];
+
+    const files = await readdir(uploadDir);
+
+    for (const fileName of files) {
+      const ext = path.extname(fileName).toLowerCase();
+      const base = path.basename(fileName, ext);
+
+      if (base === id && imageExtensions.includes(ext)) {
+        const fileToDelete = path.join(uploadDir, fileName);
+        await unlink(fileToDelete);
+      }
+    }
+
+    const ext = path.extname(imageFile.name);
+    const filePath = path.join(uploadDir, id + ext);
+
+    const bytes = await imageFile.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    await writeFile(filePath, buffer);
+  } catch (error: unknown) {
+    console.log(error);
+    return NextResponse.json(
+      { message: (error as Error).message },
+      { status: 500 }
+    );
+  }
+
+  try {
+    const imagePath = `/coursesImages/${id}${path.extname(imageFile.name)}`;
+
+    const updated: RequestBody = await pool.query(
+      "UPDATE courses SET image = ?, name = ?, description = ?, price = ? WHERE id = ?",
+      [imagePath, name, description, price, id]
+    );
+
+    if (updated.affectedRows === 0) {
+      return NextResponse.json(
+        { message: "No se pudo actualizar" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ message: "Curso actualizado." });
+  } catch (error: unknown) {
+    console.log(error);
+    return NextResponse.json(
+      { message: (error as Error).message },
+      { status: 500 }
     );
   }
 }
