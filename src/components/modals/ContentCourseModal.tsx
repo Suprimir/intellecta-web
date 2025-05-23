@@ -40,7 +40,7 @@ export default function ContentCourseModal({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50">
-      <form className="bg-white w-[30%] h-[70%] rounded-2xl p-6 flex flex-col">
+      <form className="bg-white w-full max-w-xl h-auto max-h-fit rounded-2xl p-6 flex flex-col overflow-auto">
         {/* Encabezado */}
         <div className="flex justify-between items-center">
           <h1 className="font-extrabold text-lg">
@@ -84,7 +84,7 @@ export default function ContentCourseModal({
 
               <label
                 htmlFor="document_Path"
-                className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition"
+                className="flex flex-col items-center justify-center w-full h-[90%] border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition"
               >
                 <FolderArrowDownIcon className="size-8" />
                 <span className="text-sm text-gray-600 font-semibold">
@@ -117,7 +117,7 @@ export default function ContentCourseModal({
 
               <label
                 htmlFor="video_Path"
-                className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition"
+                className="flex flex-col items-center justify-center w-full h-[90%] border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition"
               >
                 <FolderArrowDownIcon className="size-8" />
                 <span className="text-sm text-gray-600 font-semibold">
@@ -153,7 +153,7 @@ export default function ContentCourseModal({
               )}
             </div>
 
-            <div className="col-span-4">
+            <div className="col-span-4 mt-4">
               <p className="text-sm text-gray-600 mb-1 font-extrabold">
                 Orden:
               </p>

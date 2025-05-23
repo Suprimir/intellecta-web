@@ -1,3 +1,5 @@
+// ruta /api/unit_courses
+
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
 import { UnitCourse, RequestBody } from "@/types/api";
