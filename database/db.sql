@@ -48,6 +48,7 @@ CREATE TABLE courses (
  foreign key (category_ID) references categories (id) on delete cascade
 );
 
+SELECT * FROM units_courses;
 CREATE TABLE shoppingCarts (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     uuid VARCHAR(100) NOT NULL,
@@ -78,6 +79,8 @@ CREATE TABLE orders_details (
     FOREIGN KEY (course_ID) REFERENCES courses (id) ON DELETE CASCADE
 );
 
+SELECT * FROM contents;
+
 CREATE TABLE purchased_courses (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     user_ID VARCHAR(100) NOT NULL,
@@ -107,7 +110,7 @@ CREATE TABLE contents (
  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
  unit_ID INT NOT NULL,
     order_number INT NOT NULL,
- description TEXT,
+ description TEXT NOT NULL,
  media_Path TEXT,
  document_Path TEXT, 
  foreign key (unit_ID) references units_courses (id) on delete cascade
@@ -232,3 +235,5 @@ WHERE c.`instructor_ID` = "2e176783-2564-43f2-90d6-b16ecc3fc3bc";
 
 
 SELECT * FROM coursesfrontend;
+
+SELECT * from contents;

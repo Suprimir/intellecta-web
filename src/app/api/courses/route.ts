@@ -187,38 +187,68 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const formData = await request.formData();
 
-  const id = formData.get("id");
-  const imageFile = formData.get("file") as File;
-  const name = formData.get("title");
-  const description = formData.get("description");
-  const price = formData.get("price");
+  let hasValidData = false;
 
-  try {
-    const uploadDir = path.join(process.cwd(), "public", "coursesImages");
+  for (const [key, value] of formData.entries()) {
+    if (key === "id" || key === "price") continue;
 
-    await mkdir(uploadDir, { recursive: true });
-
-    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"];
-
-    const files = await readdir(uploadDir);
-
-    for (const fileName of files) {
-      const ext = path.extname(fileName).toLowerCase();
-      const base = path.basename(fileName, ext);
-
-      if (base === id && imageExtensions.includes(ext)) {
-        const fileToDelete = path.join(uploadDir, fileName);
-        await unlink(fileToDelete);
-      }
+    if (
+      (typeof value === "string" && value.trim() !== "") ||
+      (value instanceof File && value.size > 0)
+    ) {
+      hasValidData = true;
+      break;
     }
+  }
 
-    const ext = path.extname(imageFile.name);
-    const filePath = path.join(uploadDir, id + ext);
+  if (!hasValidData) {
+    return NextResponse.json(
+      { message: "Debes rellenar al menos un campo" },
+      { status: 400 }
+    );
+  }
 
-    const bytes = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+  const imageFile = formData.get("file") as File;
+  const id = formData.get("id");
 
-    await writeFile(filePath, buffer);
+  let imagePath;
+  try {
+    if (imageFile) {
+      const uploadDir = path.join(process.cwd(), "public", "coursesImages");
+
+      await mkdir(uploadDir, { recursive: true });
+
+      const imageExtensions = [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp",
+        ".bmp",
+      ];
+
+      const files = await readdir(uploadDir);
+
+      for (const fileName of files) {
+        const ext = path.extname(fileName).toLowerCase();
+        const base = path.basename(fileName, ext);
+
+        if (base === id && imageExtensions.includes(ext)) {
+          const fileToDelete = path.join(uploadDir, fileName);
+          await unlink(fileToDelete);
+        }
+      }
+
+      const ext = path.extname(imageFile.name);
+      const filePath = path.join(uploadDir, id + ext);
+
+      const bytes = await imageFile.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      await writeFile(filePath, buffer);
+
+      imagePath = `/coursesImages/${id}${path.extname(imageFile.name)}`;
+    }
   } catch (error: unknown) {
     console.log(error);
     return NextResponse.json(
@@ -228,14 +258,24 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const imagePath = `/coursesImages/${id}${path.extname(imageFile.name)}`;
+    const rawCourse: Partial<Course> = {
+      image: imagePath || undefined,
+      name: String(formData.get("title")) || undefined,
+      description: String(formData.get("description")) || undefined,
+      price: Number(formData.get("price")) || undefined,
+    };
+
+    const course = Object.fromEntries(
+      Object.entries(rawCourse).filter(([_, value]) => value !== undefined)
+    );
 
     const updated: RequestBody = await pool.query(
-      "UPDATE courses SET image = ?, name = ?, description = ?, price = ? WHERE id = ?",
-      [imagePath, name, description, price, id]
+      "UPDATE courses SET ? WHERE id = ?",
+      [course, id]
     );
 
     if (updated.affectedRows === 0) {
+      console.log(updated);
       return NextResponse.json(
         { message: "No se pudo actualizar" },
         { status: 500 }

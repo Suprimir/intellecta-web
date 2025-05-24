@@ -1,27 +1,55 @@
+import { useAlert } from "@/libs/context/AlertContext";
 import { UnitCourse } from "@/types/api";
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { FormHTMLAttributes } from "react";
 
 interface UnitCourseModalProps {
+  courseId?: number;
   mode: string | null;
   unit: UnitCourse | null;
   closeModal: () => void;
 }
 
 export default function UnitCourseModal({
+  courseId,
   mode,
   unit,
   closeModal,
 }: UnitCourseModalProps) {
+  const { showAlert } = useAlert();
+
   const handleSaveUnitCourse = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
 
     if (mode === "create") {
-      await fetch("/api/units_courses", { method: "POST", body: formData });
+      if (courseId) {
+        formData.append("courseId", String(courseId));
+      }
+      const res = await fetch("/api/units_courses", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.status === 200) {
+        showAlert(data.message, "success", "Actualizado", 2000);
+      } else {
+        showAlert(data.message, "error", "Error", 2000);
+      }
     } else {
-      await fetch("/api/units_courses", { method: "PUT", body: formData });
+      if (unit) {
+        formData.append("unitId", String(unit?.id));
+      }
+      const res = await fetch("/api/units_courses", {
+        method: "PUT",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.status === 200) {
+        showAlert(data.message, "success", "Actualizado", 2000);
+      } else {
+        showAlert(data.message, "error", "Error", 2000);
+      }
     }
   };
 

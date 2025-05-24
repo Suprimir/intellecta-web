@@ -67,6 +67,7 @@ export type OrderDetails = {
 };
 
 export type Content = {
+  id: number | undefined;
   unit_ID: number | undefined;
   course_ID: number | undefined;
   unit_Title: number | undefined;

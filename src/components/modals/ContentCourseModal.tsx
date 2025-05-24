@@ -8,14 +8,17 @@ import {
   FolderArrowDownIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { useAlert } from "@/libs/context/AlertContext";
 
 interface ContentCourseModalProps {
+  unitId?: number;
   mode: string | null;
   content: Content | null;
   closeModal: () => void;
 }
 
 export default function ContentCourseModal({
+  unitId,
   mode,
   content,
   closeModal,
@@ -25,6 +28,7 @@ export default function ContentCourseModal({
     undefined
   );
   const [preview, setPreview] = useState(false);
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     if (content) {
@@ -38,9 +42,48 @@ export default function ContentCourseModal({
     setPreview(true);
   };
 
+  const handleSaveUnit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+
+    if (mode === "create") {
+      if (unitId) {
+        formData.append("unitId", String(unitId));
+      }
+      const res = await fetch("/api/contents", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.status === 200) {
+        showAlert(data.message, "success", "Actualizado", 2000);
+      } else {
+        showAlert(data.message, "error", "Error", 2000);
+      }
+    } else {
+      if (content) {
+        formData.append("contentId", String(content.id));
+      }
+      const res = await fetch("/api/contents", {
+        method: "PUT",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.status === 200) {
+        showAlert(data.message, "success", "Actualizado", 2000);
+      } else {
+        showAlert(data.message, "error", "Error", 2000);
+      }
+    }
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50">
-      <form className="bg-white w-full max-w-xl h-auto max-h-fit rounded-2xl p-6 flex flex-col overflow-auto">
+      <form
+        onSubmit={handleSaveUnit}
+        className="bg-white w-full max-w-xl h-auto max-h-fit rounded-2xl p-6 flex flex-col overflow-auto"
+      >
         {/* Encabezado */}
         <div className="flex justify-between items-center">
           <h1 className="font-extrabold text-lg">
@@ -159,7 +202,7 @@ export default function ContentCourseModal({
               </p>
               <input
                 type="number"
-                name="order_number"
+                name="orderNumber"
                 placeholder={`${content ? content.order_number : ""}`}
                 className="text-gray-700 bg-gray-100 p-2 rounded-xl w-full"
               />

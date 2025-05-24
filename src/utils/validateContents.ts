@@ -8,10 +8,10 @@ export interface contentErrors {
   message: string;
 }
 
-export async function validateContents(data: Content) {
+export async function validateContents(data: Partial<Content>) {
   const errors: contentErrors[] = [];
 
-  // El curso que seleccionaste no existe
+  // La unidad que seleccionaste no existe
   const unitExists: [] = await pool.query(
     "SELECT 1 FROM units_courses WHERE id = ?",
     data.unit_ID

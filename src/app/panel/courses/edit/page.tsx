@@ -20,22 +20,26 @@ import {
   UnitCourse,
   UnitWithContent,
 } from "@/types/api";
+import { useAlert } from "@/libs/context/AlertContext";
 
 export default function PanelCoursesPage() {
   const [loading, setLoading] = useState(true);
   const [image, setImage] = useState("");
   const [imageFile, setImageFile] = useState<File>();
-  const [price, setPrice] = useState<number>(0);
-  const [unitListOpen, setUnitListOpen] = useState(false);
+  const [price, setPrice] = useState<string>("0.00");
   const [unitCourseModal, setUnitCourseModal] = useState(false);
   const [contentCourseModal, setContentCourseModal] = useState(false);
   const [data, setData] = useState<CourseWithUnitContent[]>();
+  const [unitId, setUnitId] = useState<number>();
+
+  const [selectedUnitIndex, SetSelectedUnitIndex] = useState<number>();
 
   const [editMode, setEditMode] = useState<"create" | "edit" | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<UnitCourse | null>(null);
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
 
   const { user, loadingUser } = useAuth();
+  const { showAlert } = useAlert();
   const searchParams = useSearchParams();
   const courseId = searchParams.get("courseId");
 
@@ -48,8 +52,8 @@ export default function PanelCoursesPage() {
         setData(data);
 
         if (data) {
-          setPrice(data[0].price);
-          setImage(data[0].image);
+          setPrice(String(data[0].price));
+          setImage(data[0].image ? data[0].image : "");
         }
         const waitForAuth = () =>
           new Promise<void>((resolve) => {
@@ -77,19 +81,33 @@ export default function PanelCoursesPage() {
 
     const formData = new FormData(e.currentTarget);
 
-    if (courseId && imageFile) {
+    if (courseId) {
       formData.append("id", courseId);
+      formData.append("price", parseFloat(price).toFixed(2));
+    }
+
+    if (imageFile) {
       formData.append("file", imageFile);
     }
 
-    await fetch("/api/courses", {
+    const res: Response = await fetch("/api/courses", {
       method: "PUT",
       body: formData,
     });
+
+    const data = await res.json();
+
+    if (res.status === 200) {
+      showAlert(data.message, "success", "Actualizado", 5000);
+    } else {
+      showAlert(data.message, "error", "Error", 5000);
+    }
   };
 
-  const handleUnitList = () => {
-    setUnitListOpen((prev) => !prev);
+  const handleUnitClick = (index: number) => {
+    SetSelectedUnitIndex((prevIndex) =>
+      prevIndex === index ? undefined : index
+    );
   };
 
   if (loading) {
@@ -160,8 +178,10 @@ export default function PanelCoursesPage() {
                 </p>
                 <div className="col-span-1 row-span-2">
                   <button
-                    onClick={() => {
-                      const newPrice = price - 1;
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const current = parseFloat(price) || 0;
+                      const newPrice = Math.max(current - 1, 0).toFixed(2);
                       setPrice(newPrice);
                     }}
                     className="cursor-pointer"
@@ -172,18 +192,24 @@ export default function PanelCoursesPage() {
                 <div className="col-span-2 row-span-2 text-xl text-center">
                   MXN$
                   <input
-                    inputMode="numeric"
-                    name="price"
-                    pattern="[0-9]*"
+                    inputMode="decimal"
+                    step="0.01"
                     value={price}
-                    onChange={(e) => setPrice(Number(e.target.value))}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (/^\d*\.?\d{0,2}$/.test(raw)) {
+                        setPrice(raw);
+                      }
+                    }}
                     className="w-[40%]"
                   />
                 </div>
                 <div className="col-span-1 row-span-2">
                   <button
-                    onClick={() => {
-                      const newPrice = price + 1;
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const current = parseFloat(price) || 0;
+                      const newPrice = (current + 1).toFixed(2);
                       setPrice(newPrice);
                     }}
                     className="cursor-pointer"
@@ -227,7 +253,7 @@ export default function PanelCoursesPage() {
                 <div key={index}>
                   <div className="bg-gray-100 p-4 inline-flex w-full rounded-xl justify-between">
                     <button
-                      onClick={() => handleUnitList()}
+                      onClick={() => handleUnitClick(index)}
                       className="hover:text-blue-500 cursor-pointer"
                     >
                       <p className="font-extrabold">
@@ -238,6 +264,7 @@ export default function PanelCoursesPage() {
                       <button
                         onClick={() => {
                           setEditMode("create");
+                          setUnitId(unit.id);
                           setSelectedContent(null);
                           setContentCourseModal(true);
                         }}
@@ -257,19 +284,20 @@ export default function PanelCoursesPage() {
                       </button>
                     </div>
                   </div>
-                  {unit.contents.map((content: Content, index) => (
-                    <div
-                      key={index}
-                      className={`overflow-hidden transition-all duration-300 ${
-                        unitListOpen
-                          ? "max-h-40 opacity-100 translate-y-0"
-                          : "max-h-0 opacity-0 -translate-y-4"
-                      }
-                                `}
-                    >
-                      <div className="bg-white p-4 inline-flex w-full justify-between">
+                  <div
+                    className={`transition-all duration-300 overflow-hidden ${
+                      selectedUnitIndex === index
+                        ? "max-h-[500px] opacity-100 translate-y-0"
+                        : "max-h-0 opacity-0 -translate-y-4"
+                    }`}
+                  >
+                    {unit.contents.map((content: Content, contentIndex) => (
+                      <div
+                        key={contentIndex}
+                        className="bg-white p-4 inline-flex w-full justify-between"
+                      >
                         <p>
-                          Video {index + 1}: {content.title}
+                          Video {contentIndex + 1}: {content.title}
                         </p>
                         <button
                           onClick={() => {
@@ -282,16 +310,17 @@ export default function PanelCoursesPage() {
                           <PencilSquareIcon className="size-5" />
                         </button>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
       )}
-      {unitCourseModal && (
+      {unitCourseModal && data && (
         <UnitCourseModal
+          courseId={data[0].id}
           mode={editMode}
           unit={selectedUnit}
           closeModal={() => {
@@ -303,6 +332,7 @@ export default function PanelCoursesPage() {
       )}
       {contentCourseModal && (
         <ContentCourseModal
+          unitId={unitId}
           mode={editMode}
           content={selectedContent}
           closeModal={() => {
