@@ -1,3 +1,5 @@
+import Stripe from "stripe";
+
 export interface RequestBody {
   insertId: number;
   affectedRows: number;
@@ -12,13 +14,14 @@ export interface ResponseBody {
 export type User = {
   uuid: string;
   name: string;
-  lastname: string;
+  last_name: string;
   username: string;
   email: string;
   password: string;
   role: "student" | "instructor" | "admin";
   profilePicture: string | null;
   lastLoggedIn: Date;
+  verified: boolean;
 };
 
 export type Category = {
@@ -77,6 +80,7 @@ export type Content = {
   description: string | undefined;
   media_Path: string | undefined;
   document_Path: string | undefined;
+  isMarked: boolean;
 };
 
 export type UnitCourse = {
@@ -100,3 +104,35 @@ export type UnitWithContent = UnitCourse & {
 export type CourseWithUnitContent = Course & {
   units: UnitWithContent[];
 };
+
+export type Payments = {
+  id: number;
+  payment_intent: string;
+  amount: number;
+  currency: string;
+  status: "succeded" | "pending" | "incomplete" | "expired" | "failed";
+  user_ID: string;
+  email: string;
+};
+
+export interface PaymentIntentResponse {
+  success: boolean;
+  data?: Stripe.PaymentIntent[];
+  errors?: Array<{
+    id: string;
+    error: string;
+  }>;
+  message?: string;
+}
+
+export interface Stats {
+  totalCourses: number;
+  totalUsers: number;
+  totalPayments: number;
+  totalIncomes: number;
+}
+
+export interface ContentCompleted {
+  content_ID: number;
+  user_ID: string;
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import {
   PlusCircleIcon,
@@ -9,6 +9,7 @@ import {
   PencilIcon,
   PencilSquareIcon,
   FolderPlusIcon,
+  ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "@/libs/context/AuthContext";
 import DashboardPageSkeleton from "@/components/skeletons/DashboardPageSkeleton";
@@ -38,6 +39,7 @@ export default function PanelCoursesPage() {
   const [selectedUnit, setSelectedUnit] = useState<UnitCourse | null>(null);
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
 
+  const router = useRouter();
   const { user, loadingUser } = useAuth();
   const { showAlert } = useAlert();
   const searchParams = useSearchParams();
@@ -81,9 +83,11 @@ export default function PanelCoursesPage() {
 
     const formData = new FormData(e.currentTarget);
 
-    if (courseId) {
+    formData.append("uuid", user ? user?.uuid : "");
+
+    if (courseId && data) {
       formData.append("id", courseId);
-      formData.append("price", parseFloat(price).toFixed(2));
+      formData.append("price", price !== String(data[0].price) ? price : "");
     }
 
     if (imageFile) {
@@ -95,12 +99,12 @@ export default function PanelCoursesPage() {
       body: formData,
     });
 
-    const data = await res.json();
+    const resData = await res.json();
 
     if (res.status === 200) {
-      showAlert(data.message, "success", "Actualizado", 5000);
+      showAlert(resData.message, "success", "Actualizado", 5000);
     } else {
-      showAlert(data.message, "error", "Error", 5000);
+      showAlert(resData.message, "error", "Error", 5000);
     }
   };
 
@@ -114,10 +118,21 @@ export default function PanelCoursesPage() {
     return <DashboardPageSkeleton />;
   }
 
+  if (data && data[0].instructor_ID !== user?.uuid) {
+    return <div>No autorizo que estes aqui bro</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 px-6 py-10">
       {data && (
         <div className="max-w-6xl mx-auto">
+          <button
+            onClick={() => router.push("/panel/courses")}
+            className="cursor-pointer bg-red-400 p-2 rounded-xl shadow font-extrabold inline-flex gap-2 mb-4"
+          >
+            <ArrowLeftIcon className="size-6" />
+            Salir
+          </button>
           <form
             onSubmit={handleSaveCourse}
             className="grid grid-cols-1 md:grid-cols-3 grid-rows-3 gap-4 mb-6"
@@ -251,7 +266,13 @@ export default function PanelCoursesPage() {
               {/* Unidades */}
               {data[0].units.map((unit: UnitWithContent, index) => (
                 <div key={index}>
-                  <div className="bg-gray-100 p-4 inline-flex w-full rounded-xl justify-between">
+                  <div
+                    className={`bg-gray-100 p-4 inline-flex w-full ${
+                      index === 0 ? "rounded-t-2xl" : ""
+                    } ${
+                      index === data[0].units.length - 1 ? "rounded-b-2xl" : ""
+                    } justify-between`}
+                  >
                     <button
                       onClick={() => handleUnitClick(index)}
                       className="hover:text-blue-500 cursor-pointer"
@@ -320,6 +341,7 @@ export default function PanelCoursesPage() {
       )}
       {unitCourseModal && data && (
         <UnitCourseModal
+          uuid={user?.uuid ? user.uuid : ""}
           courseId={data[0].id}
           mode={editMode}
           unit={selectedUnit}
@@ -332,6 +354,7 @@ export default function PanelCoursesPage() {
       )}
       {contentCourseModal && (
         <ContentCourseModal
+          uuid={user ? user?.uuid : ""}
           unitId={unitId}
           mode={editMode}
           content={selectedContent}

@@ -3,6 +3,7 @@ import { UnitCourse } from "@/types/api";
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 interface UnitCourseModalProps {
+  uuid: string;
   courseId?: number;
   mode: string | null;
   unit: UnitCourse | null;
@@ -10,6 +11,7 @@ interface UnitCourseModalProps {
 }
 
 export default function UnitCourseModal({
+  uuid,
   courseId,
   mode,
   unit,
@@ -22,9 +24,11 @@ export default function UnitCourseModal({
 
     const formData = new FormData(e.currentTarget);
 
+    formData.append("uuid", uuid);
+
     if (mode === "create") {
       if (courseId) {
-        formData.append("courseId", String(courseId));
+        formData.append("courseId", courseId.toString());
       }
       const res = await fetch("/api/units_courses", {
         method: "POST",

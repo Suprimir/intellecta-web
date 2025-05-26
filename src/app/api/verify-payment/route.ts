@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
 import { ShoppingCart } from "@/types/api";
+import Stripe from "stripe";
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 interface RequestBody {
@@ -32,7 +33,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent);
+    const paymentIntent: Stripe.PaymentIntent =
+      await stripe.paymentIntents.retrieve(payment_intent);
 
     if (paymentIntent.status === "succeeded") {
       const { uuid, courses } = paymentIntent.metadata;
@@ -54,8 +56,14 @@ export async function GET(request: NextRequest) {
       );
 
       await pool.query(
-        "INSERT INTO payments (user_ID, payment_intent) VALUE (?, ?)",
-        [uuid, paymentIntent.id]
+        "INSERT INTO payments (user_ID, payment_intent, amount, currency, status) VALUE (?, ?, ?, ?, ?)",
+        [
+          uuid,
+          paymentIntent.id,
+          paymentIntent.amount,
+          paymentIntent.currency,
+          paymentIntent.status,
+        ]
       );
 
       const placeholdersDelete = courseIds.map(() => "?").join(",");

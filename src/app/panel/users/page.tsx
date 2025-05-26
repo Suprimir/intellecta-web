@@ -2,41 +2,49 @@
 
 import { useState, useEffect } from "react";
 import {
-  InformationCircleIcon,
-  PencilSquareIcon,
-  TrashIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  CheckBadgeIcon,
+  XCircleIcon,
   FolderPlusIcon,
+  PencilSquareIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
-import { Course } from "@/types/api";
+import { User } from "@/types/api";
 import { useAuth } from "@/libs/context/AuthContext";
-import DashboardPageSkeleton from "@/components/skeletons/DashboardPageSkeleton";
 import { useRouter } from "next/navigation";
 import React from "react";
-import CourseModal from "@/components/modals/CourseModal";
+import UserModal from "@/components/modals/UserModal";
 
 export default function PanelCoursesPage() {
   const [loading, setLoading] = useState(true);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [courseModal, setCourseModal] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [userModal, setUserModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [editMode, setEditMode] = useState<"create" | "edit" | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [itemsPerPage] = useState(7);
   const { user, loadingUser } = useAuth();
   const router = useRouter();
 
   // Calcular datos de paginación
-  const totalItems = courses.length;
+  const totalItems = users.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentCourses = courses.slice(startIndex, endIndex);
+  const currentUsers = users.slice(startIndex, endIndex);
   const startItem = startIndex + 1;
   const endItem = Math.min(endIndex, totalItems);
 
   useEffect(() => {
     const loadInitialData = async () => {
       try {
+        const res = await fetch("/api/users");
+        const data: User[] = await res.json();
+        setUsers(data);
+      } catch (err) {
+        console.error("Error al inciar los datos:", err);
+      } finally {
         const waitForAuth = () =>
           new Promise<void>((resolve) => {
             const interval = setInterval(() => {
@@ -48,15 +56,6 @@ export default function PanelCoursesPage() {
           });
 
         await waitForAuth();
-
-        const resMyCourses = await fetch(
-          `/api/courses/getByUUID/${user?.uuid}/creator`
-        );
-        const myCoursesData: Course[] = await resMyCourses.json();
-        setCourses(myCoursesData);
-      } catch (err) {
-        console.error("Error al inciar los datos:", err);
-      } finally {
         setLoading(false);
       }
     };
@@ -109,57 +108,69 @@ export default function PanelCoursesPage() {
     return pages;
   };
 
-  if (loading) {
-    return <DashboardPageSkeleton />;
-  }
-
   return (
     <div className="w-full">
       <div className="mb-8 pt-16 lg:pt-0">
         <h1 className="text-3xl font-bold mb-2 text-gray-800">
-          Gestión de Cursos
+          Gestión de Usuarios
         </h1>
         <p className="text-gray-600">
-          Administra y edita todos tus cursos desde aquí
+          Administra y edita todos tus usuarios desde aquí
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="col-span-1">
           <button
-            onClick={() => setCourseModal(true)}
+            onClick={() => {
+              setEditMode("create");
+              setSelectedUser(null);
+              setUserModal(true);
+            }}
             className="cursor-pointer text-white flex gap-2 bg-[#599f96] hover:bg-[#77afa1] p-2 rounded-xl font-extrabold"
           >
             <FolderPlusIcon className="size-6" />
-            Agregar curso
+            Agregar usuario
           </button>
         </div>
 
         <div className="col-span-full">
-          <div className="relative overflow-x-auto rounded-t-2xl shadow">
+          <div
+            className={`relative overflow-x-auto ${
+              totalPages > 1 ? "rounded-t-2xl" : "rounded-2xl"
+            } shadow`}
+          >
+            {loading && (
+              <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#599f96]"></div>
+                  <span className="text-sm text-gray-600">Cargando...</span>
+                </div>
+              </div>
+            )}
             <table className="w-full text-sm text-left rtl:text-right text-gray-500">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th scope="col" className="px-6 py-4 font-semibold">
-                    Curso
+                    Nombre
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-4 font-semibold hidden xl:table-cell"
                   >
-                    Descripción
+                    Apellido
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-4 font-semibold hidden md:table-cell"
                   >
-                    Precio
+                    Email
                   </th>
                   <th scope="col" className="px-6 py-4 font-semibold">
-                    Fecha
+                    Role
                   </th>
                   <th scope="col" className="px-6 py-4 font-semibold">
-                    Categoría
+                    Verificado
                   </th>
                   <th scope="col" className="px-6 py-4 font-semibold">
                     Acciones
@@ -167,51 +178,64 @@ export default function PanelCoursesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {currentCourses.map((course: Course, index) => (
-                  <tr
-                    key={index}
-                    className="bg-white hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {course.name}
-                    </td>
-                    <td className="px-6 py-4 max-w-xs hidden xl:table-cell truncate">
-                      {course.description}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-green-600 hidden md:table-cell">
-                      MXN${course.price}
-                    </td>
-                    <td className="px-6 py-4">
-                      {new Date(course.date).toLocaleDateString("es-MX")}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                        {course.category_name}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() =>
-                            router.push(
-                              `/panel/courses/edit?courseId=${course.id}`
-                            )
-                          }
-                          className="cursor-pointer bg-[#599f96] hover:bg-[#77afa1] text-white p-2 rounded-md transition-colors"
-                          title="Editar curso"
-                        >
-                          <PencilSquareIcon className="size-4" />
-                        </button>
-                        <button
-                          className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-md transition-colors"
-                          title="Eliminar curso"
-                        >
-                          <TrashIcon className="size-4" />
-                        </button>
-                      </div>
+                {currentUsers.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-8 text-center text-gray-500"
+                    >
+                      {loading
+                        ? "Cargando datos..."
+                        : "No hay datos disponibles"}
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  currentUsers.map((user: User, index) => (
+                    <tr
+                      key={index}
+                      className="bg-white hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {user.name}
+                      </td>
+                      <td className="px-6 py-4 max-w-xs hidden xl:table-cell truncate">
+                        {user.last_name}
+                      </td>
+                      <td className="px-6 py-4 font-semibold text-green-600 hidden md:table-cell">
+                        {user.email}
+                      </td>
+                      <td className="px-6 py-4">{user.role}</td>
+                      <td className="px-6 py-4">
+                        {user.verified ? (
+                          <CheckBadgeIcon className="size-6 text-blue-400" />
+                        ) : (
+                          <XCircleIcon className="size-6 text-red-400" />
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setEditMode("edit");
+                              setSelectedUser(user);
+                              setUserModal(true);
+                            }}
+                            className="cursor-pointer bg-[#599f96] hover:bg-[#77afa1] text-white p-2 rounded-md transition-colors"
+                            title="Editar curso"
+                          >
+                            <PencilSquareIcon className="size-4" />
+                          </button>
+                          <button
+                            className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-md transition-colors"
+                            title="Eliminar curso"
+                          >
+                            <TrashIcon className="size-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -298,10 +322,11 @@ export default function PanelCoursesPage() {
           )}
         </div>
       </div>
-      {courseModal && user && (
-        <CourseModal
-          closeModal={() => setCourseModal(false)}
-          uuid={user.uuid}
+      {userModal && (
+        <UserModal
+          user={selectedUser}
+          mode={editMode}
+          closeModal={() => setUserModal(false)}
         />
       )}
     </div>

@@ -10,7 +10,7 @@ CREATE TABLE users (
  password VARCHAR(200) NOT NULL,
  role ENUM ('student', 'instructor', 'admin') NOT NULL, 
  profilePicture TEXT,
- verified BOOLEAN NOT NULL
+ verified BOOLEAN NOT NULL DEFAULT 0
 );
 
 CREATE TABLE emailToken (
@@ -48,7 +48,6 @@ CREATE TABLE courses (
  foreign key (category_ID) references categories (id) on delete cascade
 );
 
-SELECT * FROM units_courses;
 CREATE TABLE shoppingCarts (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     uuid VARCHAR(100) NOT NULL,
@@ -79,8 +78,6 @@ CREATE TABLE orders_details (
     FOREIGN KEY (course_ID) REFERENCES courses (id) ON DELETE CASCADE
 );
 
-SELECT * FROM contents;
-
 CREATE TABLE purchased_courses (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     user_ID VARCHAR(100) NOT NULL,
@@ -94,9 +91,11 @@ CREATE TABLE purchased_courses (
 CREATE TABLE payments (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     payment_intent VARCHAR(255) NOT NULL,
+    amount FLOAT NOT NULL,
+    currency VARCHAR(8) NOT NULL,
+    status ENUM("succeded", "pending", "incomplete", "expired", "failed") NOT NULL,
     user_ID VARCHAR(100) NOT NULL
 );
-
 
 CREATE TABLE units_courses (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
@@ -114,6 +113,14 @@ CREATE TABLE contents (
  media_Path TEXT,
  document_Path TEXT, 
  foreign key (unit_ID) references units_courses (id) on delete cascade
+);
+
+CREATE TABLE contents_completed (
+    content_ID INT NOT NULL,
+    user_ID VARCHAR(100) NOT NULL,
+    UNIQUE (content_ID, user_ID),
+    FOREIGN KEY (content_ID) REFERENCES contents (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_ID) REFERENCES users (uuid) ON DELETE CASCADE
 );
 
 CREATE TABLE messages ( 
@@ -161,7 +168,6 @@ SELECT * FROM courses c JOIN shoppingcarts_details sd ON sd.course_ID = c.id WHE
 SELECT c.id, c.name, c.description, c.price, c.image, c.date, c.duration, c.instructor_ID, c.category_ID FROM courses c JOIN shoppingcarts_details sd ON sd.course_ID = c.id WHERE sd.shoppingCart_ID = 1;
 
 USE intellecta_database;
-
 
 CREATE VIEW coursesFrontend AS
 SELECT c.id, c.name, c.description, c.image, c.`date`, c.duration, c.`instructor_ID`, CONCAT_WS(" ", u.name, u.last_name) AS instructor, c.`category_ID`, cat.description AS category_name, c.price 

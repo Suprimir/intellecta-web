@@ -11,6 +11,7 @@ import {
 import { useAlert } from "@/libs/context/AlertContext";
 
 interface ContentCourseModalProps {
+  uuid: string;
   unitId?: number;
   mode: string | null;
   content: Content | null;
@@ -18,6 +19,7 @@ interface ContentCourseModalProps {
 }
 
 export default function ContentCourseModal({
+  uuid,
   unitId,
   mode,
   content,
@@ -46,6 +48,8 @@ export default function ContentCourseModal({
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
+
+    formData.append("uuid", uuid);
 
     if (mode === "create") {
       if (unitId) {

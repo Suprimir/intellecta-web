@@ -31,7 +31,7 @@ export default function CoursesMainPage({ courses }: CoursesMainPageProps) {
 
       <div className="mx-auto pt-6 sm:pt-7 lg:pt-8 pb-6 sm:pb-7 lg:pb-8 max-w-[95%] sm:max-w-[90%] md:max-w-[85%] lg:max-w-[80%] text-center sm:text-left">
         <div
-          onClick={() => router.push("/courses")}
+          onClick={() => router.push("/home/courses")}
           className="cursor-pointer border-[#0D7682] border-2 inline-flex items-center p-2 hover:bg-[#0D7682]/5 transition-colors"
         >
           <Button

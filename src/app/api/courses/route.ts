@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/libs/mysql";
-import { validateCourses } from "@/utils/validateCourses";
-import { validatePermissions } from "@/utils/validatePermissions";
 import { Course } from "@/types/api";
 import { writeFile, mkdir, readdir, unlink } from "fs/promises";
 import path from "path";
+import { verify } from "jsonwebtoken";
 
 type RequestBody = {
   insertId: number;
   affectedRows: number;
 };
+
+interface NextID {
+  AUTO_INCREMENT: number;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -99,73 +102,113 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Terminado
 export async function POST(request: NextRequest) {
   try {
-    const course: Course = await request.json();
+    const formData = await request.formData();
 
-    // Verificar que el usuario tenga permisos para crear cursos
-    if (!(await validatePermissions(request, true))) {
-      return NextResponse.json(
-        {
-          message: "No tienes los permisos suficientes para hacer este cambio.",
-        },
-        { status: 403 }
-      );
-    }
+    // Constantes a utilizar
+    const imageFile = formData.get("file") as File;
 
-    // Verifica que los valores obligatorios tengan contenido
-    if (!course.name) {
+    const course: Partial<Course> = {
+      name: formData.get("title")?.toString() || undefined,
+      description: formData.get("description")?.toString() || undefined,
+      price: formData.get("price") ? Number(formData.get("price")) : undefined,
+      instructor_ID: formData.get("uuid")?.toString() || undefined,
+      category_ID: formData.get("category")
+        ? Number(formData.get("category"))
+        : undefined,
+    };
+
+    // Verificar que esten todos los campos
+    const hasEmptyFields = Object.values(course).some(
+      (value) => value === undefined
+    );
+
+    if (hasEmptyFields || !imageFile || imageFile.size === 0) {
       return NextResponse.json(
-        { message: "Falta el valor de name del curso." },
-        { status: 400 }
-      );
-    } else if (!course.image) {
-      return NextResponse.json(
-        { message: "Falta el valor de course_Image." },
-        { status: 400 }
-      );
-    } else if (!course.duration) {
-      return NextResponse.json(
-        { message: "Falta el valor de duration del curso." },
-        { status: 400 }
-      );
-    } else if (!course.instructor_ID) {
-      return NextResponse.json(
-        { message: "Falta el valor de instructorUuid del curso." },
-        { status: 400 }
-      );
-    } else if (!course.category_ID) {
-      return NextResponse.json(
-        { message: "Falta el valor de category del curso." },
+        { message: "Debes rellenar todos los campos." },
         { status: 400 }
       );
     }
 
-    // Verifica que no exista un curso con el mismo nombre
-    const courseValidationErrors = await validateCourses(course);
-
-    if (courseValidationErrors.length > 0) {
-      return NextResponse.json(
-        courseValidationErrors.map((error) => ({
-          field: error.field,
-          message: error.message,
-        })),
-        { status: 409 }
-      );
+    // Verificacion de autoridad
+    if (!course.instructor_ID) {
+      return NextResponse.json({ message: "No autorizado" }, { status: 401 });
     }
 
-    // Despues de las verificaciones realiza el insert a la BD
-    const result: RequestBody = await pool.query("INSERT INTO courses SET ?", {
-      name: course.name,
-      description: course.description,
-      image: course.image,
-      date: course.date,
-      duration: course.duration,
-      instructor_ID: course.instructor_ID,
-      category_ID: course.category_ID,
-    });
+    const token = request.cookies.get("sessionToken")?.value;
+
+    if (!token) {
+      return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+    }
+    const payload = verify(token, process.env.JWT_SECRET!) as {
+      uuid: string;
+      rol: string;
+    };
+
+    if (course.instructor_ID !== payload.uuid || payload.rol !== "admin") {
+      return NextResponse.json({ message: "No autorizado" }, { status: 403 });
+    }
+
+    // Obtener el proximo Id para guardar imagen con su identificador
+    const data: NextID[] = await pool.query(
+      "SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'courses';"
+    );
+
+    const nextId = data[0].AUTO_INCREMENT;
+
+    // Proceso de guardado de imagen
+    if (path.extname(imageFile.name)) {
+      const uploadDir = path.join(process.cwd(), "public", "coursesImages");
+
+      await mkdir(uploadDir, { recursive: true });
+
+      const imageExtensions = [
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp",
+        ".bmp",
+      ];
+
+      const files = await readdir(uploadDir);
+
+      for (const fileName of files) {
+        const ext = path.extname(fileName).toLowerCase();
+        const base = path.basename(fileName, ext);
+
+        if (base === String(nextId) && imageExtensions.includes(ext)) {
+          const fileToDelete = path.join(uploadDir, fileName);
+          await unlink(fileToDelete);
+        }
+      }
+
+      const ext = path.extname(imageFile.name);
+      const filePath = path.join(uploadDir, nextId + ext);
+
+      const bytes = await imageFile.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      await writeFile(filePath, buffer);
+
+      course.image = `/coursesImages/${nextId}${path.extname(imageFile.name)}`;
+    }
+
+    // Insercion del curso
+    const result: RequestBody = await pool.query("INSERT INTO courses SET ?", [
+      course,
+    ]);
 
     pool.end();
+
+    if (result.affectedRows === 0) {
+      return NextResponse.json(
+        { message: "No se pudo crear" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       message: "Curso creado exitosamente",
@@ -174,46 +217,63 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     console.log(error);
     return NextResponse.json(
-      {
-        message: (error as Error).message,
-      },
-      {
-        status: 500,
-      }
+      { message: (error as Error).message },
+      { status: 500 }
     );
   }
 }
 
+// Terminado
 export async function PUT(request: NextRequest) {
-  const formData = await request.formData();
-
-  let hasValidData = false;
-
-  for (const [key, value] of formData.entries()) {
-    if (key === "id" || key === "price") continue;
-
-    if (
-      (typeof value === "string" && value.trim() !== "") ||
-      (value instanceof File && value.size > 0)
-    ) {
-      hasValidData = true;
-      break;
-    }
-  }
-
-  if (!hasValidData) {
-    return NextResponse.json(
-      { message: "Debes rellenar al menos un campo" },
-      { status: 400 }
-    );
-  }
-
-  const imageFile = formData.get("file") as File;
-  const id = formData.get("id");
-
-  let imagePath;
   try {
-    if (imageFile) {
+    const formData = await request.formData();
+
+    // Constantes a utilizar
+    const uuid = formData.get("uuid");
+    const id = formData.get("id");
+    const imageFile = formData.get("file") as File;
+
+    const rawCourse: Partial<Course> = {
+      name: formData.get("title")?.toString() || undefined,
+      description: formData.get("description")?.toString() || undefined,
+      price: formData.get("price") ? Number(formData.get("price")) : undefined,
+    };
+
+    // Limpiamos valores no definidos
+    const course = Object.fromEntries(
+      Object.entries(rawCourse).filter(([_, value]) => value !== undefined)
+    );
+
+    // Verificar que hay 1 campo actualizable
+    if (Object.keys(course).length === 0 && imageFile.size === 0) {
+      return NextResponse.json(
+        { message: "Debes rellenar por lo menos 1 campo." },
+        { status: 400 }
+      );
+    }
+
+    // Verificacion de autoridad
+    if (!uuid) {
+      return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+    }
+
+    const token = request.cookies.get("sessionToken")?.value;
+
+    if (!token) {
+      return NextResponse.json({ message: "No autorizado" }, { status: 401 });
+    }
+
+    const payload = verify(token, process.env.JWT_SECRET!) as {
+      uuid: string;
+      rol: string;
+    };
+
+    if (uuid !== payload.uuid || payload.rol !== "admin") {
+      return NextResponse.json({ message: "No autorizado" }, { status: 403 });
+    }
+
+    // Proceso de guardado de imagen
+    if (imageFile && path.extname(imageFile.name)) {
       const uploadDir = path.join(process.cwd(), "public", "coursesImages");
 
       await mkdir(uploadDir, { recursive: true });
@@ -247,35 +307,18 @@ export async function PUT(request: NextRequest) {
 
       await writeFile(filePath, buffer);
 
-      imagePath = `/coursesImages/${id}${path.extname(imageFile.name)}`;
+      course.image = `/coursesImages/${id}${path.extname(imageFile.name)}`;
     }
-  } catch (error: unknown) {
-    console.log(error);
-    return NextResponse.json(
-      { message: (error as Error).message },
-      { status: 500 }
-    );
-  }
 
-  try {
-    const rawCourse: Partial<Course> = {
-      image: imagePath || undefined,
-      name: String(formData.get("title")) || undefined,
-      description: String(formData.get("description")) || undefined,
-      price: Number(formData.get("price")) || undefined,
-    };
-
-    const course = Object.fromEntries(
-      Object.entries(rawCourse).filter(([_, value]) => value !== undefined)
-    );
-
-    const updated: RequestBody = await pool.query(
+    // Actualizamos el curso
+    const result: RequestBody = await pool.query(
       "UPDATE courses SET ? WHERE id = ?",
       [course, id]
     );
 
-    if (updated.affectedRows === 0) {
-      console.log(updated);
+    pool.end();
+
+    if (result.affectedRows === 0) {
       return NextResponse.json(
         { message: "No se pudo actualizar" },
         { status: 500 }

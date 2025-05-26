@@ -2,6 +2,7 @@ import { Course } from "@/types/api";
 import { useState, useEffect } from "react";
 import { ArrowRightIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { useAlert } from "@/libs/context/AlertContext";
+import { useRouter } from "next/navigation";
 
 interface CourseCardProps {
   course: Course;
@@ -20,6 +21,7 @@ export default function CourseCard({
 }: CourseCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isAdded, setIsAdded] = useState(course.location === "cart");
+  const router = useRouter();
   const { showAlert } = useAlert();
 
   useEffect(() => {
@@ -64,7 +66,7 @@ export default function CourseCard({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow hover:shadow-md transition-all overflow-hidden border border-gray-200">
+    <div className="bg-white rounded-2xl shadow hover:shadow-md transition-all overflow-hidden border border-gray-200 flex flex-col h-full">
       <div className="relative">
         <img
           src={course.image}
@@ -72,7 +74,7 @@ export default function CourseCard({
           className="w-full h-48 object-cover"
         />
       </div>
-      <div className="p-5">
+      <div className="p-5 flex flex-col flex-grow">
         <h3
           className="font-semibold text-lg text-gray-800 mb-1 line-clamp-1"
           title={course.name}
@@ -92,7 +94,7 @@ export default function CourseCard({
 
         {!isInMainPage &&
           (course.location === "cart" || course.location === "") && (
-            <div>
+            <div className="flex flex-col flex-grow">
               <div className="flex items-center text-sm mb-2">
                 <span className="font-bold text-amber-700">
                   {course.rating}
@@ -112,29 +114,31 @@ export default function CourseCard({
                 MX${course.price}
               </div>
 
-              <button
-                onClick={handleCartAction}
-                disabled={isLoading}
-                className={`cursor-pointer w-full py-2 px-4 rounded-md flex items-center justify-center gap-2 font-medium transition-all duration-200 ${
-                  isAdded
-                    ? "bg-black hover:bg-[#3d3d3d] text-white"
-                    : "bg-[#ffd558] hover:bg-[#ffe9a8] text-black"
-                } disabled:opacity-70 disabled:cursor-not-allowed`}
-              >
-                <ShoppingCartIcon className="size-6" />
-                {isLoading
-                  ? isAdded
-                    ? "Removiendo..."
-                    : "Agregando..."
-                  : isAdded
-                  ? "Remover del Carrito"
-                  : "Agregar al Carrito"}
-              </button>
+              <div className="mt-auto">
+                <button
+                  onClick={handleCartAction}
+                  disabled={isLoading}
+                  className={`cursor-pointer w-full py-2 px-4 rounded-md flex items-center justify-center gap-2 font-medium transition-all duration-200 ${
+                    isAdded
+                      ? "bg-black hover:bg-[#3d3d3d] text-white"
+                      : "bg-[#ffd558] hover:bg-[#ffe9a8] text-black"
+                  } disabled:opacity-70 disabled:cursor-not-allowed`}
+                >
+                  <ShoppingCartIcon className="size-6" />
+                  {isLoading
+                    ? isAdded
+                      ? "Removiendo..."
+                      : "Agregando..."
+                    : isAdded
+                    ? "Remover del Carrito"
+                    : "Agregar al Carrito"}
+                </button>
+              </div>
             </div>
           )}
 
         {(course.location === "purchased" || isInDashboard) && (
-          <div>
+          <div className="flex flex-col flex-grow">
             <div className="flex items-center text-sm mb-2">
               <span className="font-bold text-amber-700">{course.rating}</span>
               <div className="flex text-amber-400 ml-1">
@@ -144,14 +148,21 @@ export default function CourseCard({
               </div>
             </div>
 
-            <div className="text-xs text-gray-600 mb-12">
+            <div className="text-xs text-gray-600 mb-3">
               {(course.duration / 60 / 60).toFixed(2)} horas totales
             </div>
 
-            <button className="cursor-pointer w-full mt-2 py-2 px-4 rounded-md flex items-center justify-center gap-2 font-medium bg-[#599f96] hover:bg-[#77afa1] text-white transition duration-200">
-              <ArrowRightIcon className="size-6" />
-              Continuar curso
-            </button>
+            <div className="mt-auto">
+              <button
+                onClick={() =>
+                  router.push(`/dashboard/courses?courseId=${course.id}`)
+                }
+                className="cursor-pointer w-full py-2 px-4 rounded-md flex items-center justify-center gap-2 font-medium bg-[#599f96] hover:bg-[#77afa1] text-white transition duration-200"
+              >
+                <ArrowRightIcon className="size-6" />
+                Continuar curso
+              </button>
+            </div>
           </div>
         )}
       </div>

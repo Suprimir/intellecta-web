@@ -9,7 +9,7 @@ export default function UserProfile({
 }: {
   params: Promise<{ uuid: string }>;
 }) {
-  const defaultUser: User = {
+  const defaultUser: Partial<User> = {
     uuid: "",
     profilePicture: null,
     username: "",
@@ -18,7 +18,7 @@ export default function UserProfile({
     role: "student",
   };
 
-  const [user, setUser] = useState<User>(defaultUser);
+  const [user, setUser] = useState<Partial<User>>(defaultUser);
   const [loading, setLoading] = useState(true);
   const defaultProfileImage = "/userImages/default.webp";
 

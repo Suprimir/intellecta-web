@@ -24,36 +24,36 @@ const products = [
   {
     name: "Tecnología y Programación",
     description: "Crea software y domina herramientas digitales.",
-    href: "/courses?category=Programación",
+    href: "/home/courses?category=Programación",
     icon: CommandLineIcon,
   },
   {
     name: "Arte y Diseño",
     description: "Desarrolla tu lado creativo.",
-    href: "/courses?category=Arte",
+    href: "/home/courses?category=Arte",
     icon: PaintBrushIcon,
   },
   {
     name: "Negocios y Emprendimiento",
     description: "Aprende a emprender y liderar.",
-    href: "/courses?category=Negocios",
+    href: "/home/courses?category=Negocios",
     icon: BriefcaseIcon,
   },
   {
     name: "Educación y Desarrollo Personal",
     description: "Mejora tus habilidades y crecimiento personal.",
-    href: "/courses?category=Educación",
+    href: "/home/courses?category=Educación",
     icon: BookOpenIcon,
   },
   {
     name: "Idiomas",
     description: "Aprende o mejora un idioma.",
-    href: "/courses?category=Idiomas",
+    href: "/home/courses?category=Idiomas",
     icon: LanguageIcon,
   },
 ];
 const callsToAction = [
-  { name: "Ver todos los cursos", href: "/courses", icon: EyeIcon },
+  { name: "Ver todos los cursos", href: "/home/courses", icon: EyeIcon },
   { name: "Ver mis cursos", href: "/dashboard", icon: BookOpenIcon },
 ];
 
@@ -93,7 +93,7 @@ export default function NavBar() {
           showLoginButton: false,
           showSearchBar: true,
         });
-      } else if (activeRoute === "/courses") {
+      } else if (activeRoute === "/home/courses") {
         setNavState({
           showRegisterButton: !user,
           showLoginButton: !user,
@@ -198,7 +198,7 @@ export default function NavBar() {
         <div className="hidden lg:flex lg:gap-x-12">
           <div className="popOverButton relative">
             <a
-              href="/courses"
+              href="/home/courses"
               className="flex items-center gap-x-1 text-sm/6 font-semibold text-gray-900"
             >
               Cursos
@@ -253,7 +253,7 @@ export default function NavBar() {
           </div>
 
           <a
-            href="/certificates"
+            href="/home/certificates"
             className="text-sm/6 font-semibold text-gray-900"
           >
             Certificados
@@ -272,7 +272,7 @@ export default function NavBar() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </form>
-                <a href={`/courses?search=${searchTerm}`}>
+                <a href={`/home/courses?search=${searchTerm}`}>
                   <MagnifyingGlassIcon
                     aria-hidden="true"
                     className="size-5 flex-none group-data-open:rotate-180"
@@ -341,7 +341,7 @@ export default function NavBar() {
                     aria-labelledby="user-menu-button"
                   >
                     <a
-                      href={`/profile/${user.uuid}`}
+                      href={`/dashboard/profile/${user.uuid}`}
                       className="block px-4 py-2 text-sm text-gray-700"
                       onClick={(e) => e.stopPropagation()}
                     >
