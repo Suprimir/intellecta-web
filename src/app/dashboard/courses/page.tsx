@@ -33,6 +33,7 @@ export default function CourseContentPage() {
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [contentCompleted, setContentCompleted] = useState<number[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [certified, setCertified] = useState<boolean | undefined>(undefined);
   const [progress, setProgress] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -53,35 +54,70 @@ export default function CourseContentPage() {
           });
         await waitForAuth();
 
+        // Obtener los datos del curso
         const resContent = await fetch(
           `/api/courses/getByID/${courseId}/contents`
         );
         const dataContent: CourseWithUnitContent[] = await resContent.json();
         setCourse(dataContent[0]);
 
-        const contentsIds: any[] = dataContent[0].units.flatMap((unit) =>
-          unit.contents.map((content) => content.id)
-        );
-        setContentsIds(contentsIds);
-
-        const resCompleted = await fetch(
-          `/api/contents/getByUUID/${user?.uuid}/completed`,
-          {
-            method: "POST",
-            body: JSON.stringify({ contentsIds }),
+        const fetchCertificate = async () => {
+          const resCertificate = await fetch(
+            `/api/certificates?uuid=${user?.uuid}&course_ID=${dataContent[0].id}`
+          );
+          if (resCertificate.status === 200) {
+            setCertified(true);
+          } else {
+            setCertified(false);
           }
-        );
-        const dataCompleted: ContentCompleted[] = await resCompleted.json();
-        const contentCompletedIds = dataCompleted.flatMap(
-          (contentCompleted) => contentCompleted.content_ID
-        );
-        setContentCompleted(contentCompletedIds);
+        };
 
-        const totalContents = contentsIds.length;
-        const completedContents = contentCompletedIds.length;
-        const progressPercentage =
-          totalContents > 0 ? (completedContents / totalContents) * 100 : 0;
-        setProgress(progressPercentage);
+        // Esperar a que se actualice el estado del certificado
+        await fetchCertificate();
+
+        // Verificar si el usuario ya tiene el certificado
+        const waitForCertificate = () =>
+          new Promise<void>((resolve) => {
+            const interval = setInterval(() => {
+              console.log(certified);
+              if (certified !== undefined) {
+                clearInterval(interval);
+                resolve();
+              }
+            }, 100);
+          });
+
+        await waitForCertificate();
+
+        // Si el usuario tiene el certificado, no permitir marcar contenidos como completados
+        if (!certified) {
+          console.log(certified);
+          // Obtener los IDs de los contenidos para calcular el progreso
+          const contentsIds: any[] = dataContent[0].units.flatMap((unit) =>
+            unit.contents.map((content) => content.id)
+          );
+          setContentsIds(contentsIds);
+
+          // Obtener los contenidos completados por el usuario
+          const resCompleted = await fetch(
+            `/api/contents/getByUUID/${user?.uuid}/completed`,
+            {
+              method: "POST",
+              body: JSON.stringify({ contentsIds }),
+            }
+          );
+          const dataCompleted: ContentCompleted[] = await resCompleted.json();
+          const contentCompletedIds = dataCompleted.flatMap(
+            (contentCompleted) => contentCompleted.content_ID
+          );
+          setContentCompleted(contentCompletedIds);
+
+          const totalContents = contentsIds.length;
+          const completedContents = contentCompletedIds.length;
+          const progressPercentage =
+            totalContents > 0 ? (completedContents / totalContents) * 100 : 0;
+          setProgress(progressPercentage);
+        }
       } catch (err) {
         console.error("Error al iniciar los datos:", err);
       } finally {
@@ -110,7 +146,26 @@ export default function CourseContentPage() {
   };
 
   const handleGetCertificate = async () => {
-    // Aqui ira la logica para obtener certificado
+    await fetch("/api/certificates", {
+      method: "POST",
+      body: JSON.stringify({
+        uuid: user?.uuid,
+        course_ID: course?.id,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.message) {
+          showAlert(data.message, "success", "Certificado solicitado", 2000);
+        } else {
+          showAlert(
+            "No se pudo solicitar el certificado",
+            "error",
+            "Error",
+            2000
+          );
+        }
+      });
   };
 
   const handleUnitClick = (index: number) => {
@@ -227,7 +282,7 @@ export default function CourseContentPage() {
             <div className="flex items-center space-x-4">
               {progress === 100 && (
                 <button
-                  onClick={() => router.push("/dashboard")}
+                  onClick={handleGetCertificate}
                   className="cursor-pointer me-6 text-white bg-green-400 p-1 rounded-full"
                 >
                   <CheckCircleIcon className="size-8" />
