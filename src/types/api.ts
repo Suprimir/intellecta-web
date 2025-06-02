@@ -136,3 +136,14 @@ export interface ContentCompleted {
   content_ID: number;
   user_ID: string;
 }
+
+export interface Certificate {
+  id: number;
+  user_ID: string;
+  course_ID: number;
+  name: string;
+}
+
+export interface Profile extends User {
+  certificates: Certificate[];
+}

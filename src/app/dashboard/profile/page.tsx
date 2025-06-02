@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { User } from "@/types/api";
+import { Certificate, Profile, User } from "@/types/api";
+import { useAuth } from "@/libs/context/AuthContext";
+import { useSearchParams } from "next/navigation";
 
 export default function UserProfile({
   params,
@@ -18,32 +20,44 @@ export default function UserProfile({
     role: "student",
   };
 
-  const [user, setUser] = useState<Partial<User>>(defaultUser);
+  const [userData, setUserData] = useState<Partial<Profile>>(defaultUser);
   const [loading, setLoading] = useState(true);
+  const { user, loadingUser } = useAuth();
   const defaultProfileImage = "/userImages/default.webp";
+  const searchParams = useSearchParams();
+  const uuid = searchParams.get("uuid");
 
   useEffect(() => {
-    try {
-      const getUser = async () => {
-        const { uuid } = await params;
+    const loadInitialData = async () => {
+      try {
+        const waitForAuth = () =>
+          new Promise<void>((resolve) => {
+            const interval = setInterval(() => {
+              if (!loadingUser) {
+                clearInterval(interval);
+                resolve();
+              }
+            }, 100);
+          });
+        await waitForAuth();
 
-        const response = await fetch(`/api/profile/${uuid}`);
-        const user: User = await response.json();
-        setUser(user);
-      };
+        const res = await fetch(`/api/profile/${uuid}`);
+        const userData: Partial<User> = await res.json();
+        setUserData(userData);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      getUser();
-      setLoading(false);
-    } catch (error: unknown) {
-      console.error((error as Error).message);
-    }
-  }, []);
+    loadInitialData();
+  }, [loadingUser]);
 
   if (loading) {
     return <div>Cargando...</div>;
   }
-  const profileImage =
-    user.profilePicture != null ? user.profilePicture : defaultProfileImage;
+
   return (
     <div className="bg-gray-100 min-h-screen">
       <div className="bg-[#FFBD008A] text-white py-8">
@@ -53,7 +67,11 @@ export default function UserProfile({
             <div className="relative w-32 h-32 md:w-40 md:h-40">
               <div className="rounded-full overflow-hidden border-4 border-white shadow-lg">
                 <Image
-                  src={profileImage}
+                  src={
+                    userData.profilePicture
+                      ? userData.profilePicture
+                      : defaultProfileImage
+                  }
                   alt="Foto de perfil"
                   width={160}
                   height={160}
@@ -64,7 +82,7 @@ export default function UserProfile({
 
             {/* Información básica */}
             <div className="text-center md:text-left space-y-2">
-              <h1 className="text-3xl font-bold">{user.username}</h1>
+              <h1 className="text-3xl font-bold">{userData.username}</h1>
               <div className="flex justify-center md:justify-start gap-4 mt-2">
                 <span className="flex items-center gap-1">
                   <svg
@@ -75,22 +93,24 @@ export default function UserProfile({
                     <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                     <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                   </svg>
-                  {user.email}
+                  {userData.email}
                 </span>
               </div>
             </div>
 
-            {/* Botones de acción (alineados a la derecha en escritorio) */}
-            <div className="mt-4 md:mt-0 md:ml-auto">
-              <button
-                onClick={() => {
-                  console.log(user);
-                }}
-                className="bg-white text-teal-600 px-6 py-2 rounded-md font-medium hover:bg-teal-50 transition-colors"
-              >
-                Editar perfil
-              </button>
-            </div>
+            {/* Botones de acción */}
+            {uuid === user?.uuid && (
+              <div className="mt-4 md:mt-0 md:ml-auto">
+                <button
+                  onClick={() => {
+                    console.log(user);
+                  }}
+                  className="bg-white text-teal-600 px-6 py-2 rounded-md font-medium hover:bg-teal-50 transition-colors"
+                >
+                  Editar perfil
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -137,6 +157,13 @@ export default function UserProfile({
               <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-4">
                 Certificaciones
               </h2>
+
+              {userData.certificates &&
+                userData.certificates.map((certificate, index) => (
+                  <div key={index}>
+                    <h1>{certificate.name}</h1>
+                  </div>
+                ))}
 
               <div className="mt-6">
                 <a

@@ -40,6 +40,7 @@ export default function CourseContentPage() {
   const { user, loadingUser } = useAuth();
   const { showAlert } = useAlert();
 
+  // Inicializar los datos iniciales de la pagina.
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -74,26 +75,26 @@ export default function CourseContentPage() {
 
         // Esperar a que se actualice el estado del certificado
         await fetchCertificate();
+      } catch (err) {
+        console.error("Error al iniciar los datos:", err);
+      }
+    };
 
-        // Verificar si el usuario ya tiene el certificado
-        const waitForCertificate = () =>
-          new Promise<void>((resolve) => {
-            const interval = setInterval(() => {
-              console.log(certified);
-              if (certified !== undefined) {
-                clearInterval(interval);
-                resolve();
-              }
-            }, 100);
-          });
+    loadInitialData();
+  }, [courseId, loadingUser]);
 
-        await waitForCertificate();
-
+  /*  
+      Verifica si existe certificado para el curso seleccionado si es asi entonces cambia el
+      comportamiento de la pagina para evitar marcar y/o desmarcar los contenidos evitando
+      errores. 
+  */
+  useEffect(() => {
+    const loadProgress = async () => {
+      try {
         // Si el usuario tiene el certificado, no permitir marcar contenidos como completados
-        if (!certified) {
-          console.log(certified);
+        if (!certified && course !== undefined) {
           // Obtener los IDs de los contenidos para calcular el progreso
-          const contentsIds: any[] = dataContent[0].units.flatMap((unit) =>
+          const contentsIds: any[] = course.units.flatMap((unit) =>
             unit.contents.map((content) => content.id)
           );
           setContentsIds(contentsIds);
@@ -125,8 +126,8 @@ export default function CourseContentPage() {
       }
     };
 
-    loadInitialData();
-  }, [courseId, loadingUser]);
+    loadProgress();
+  }, [certified]);
 
   const getCompleted = async () => {
     const resCompleted = await fetch(
@@ -169,6 +170,7 @@ export default function CourseContentPage() {
   };
 
   const handleUnitClick = (index: number) => {
+    console.log(certified);
     setSelectedUnitIndex(selectedUnitIndex === index ? null : index);
     if (selectedUnitIndex !== index) {
       setSelectedContent(null);
@@ -279,28 +281,37 @@ export default function CourseContentPage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              {progress === 100 && (
-                <button
-                  onClick={handleGetCertificate}
-                  className="cursor-pointer me-6 text-white bg-green-400 p-1 rounded-full"
-                >
-                  <CheckCircleIcon className="size-8" />
-                </button>
-              )}
-              <div className="hidden sm:block">
-                <div className="text-sm text-gray-600">Progreso del curso</div>
-                <div className="w-32 bg-gray-200 rounded-full h-2 mt-1">
-                  <div
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${progress}%` }}
-                  ></div>
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {Math.round(progress)}% completado
+            {!certified ? (
+              <div className="flex items-center space-x-4">
+                {progress === 100 && (
+                  <button
+                    onClick={handleGetCertificate}
+                    className="cursor-pointer me-6 text-white bg-green-400 p-1 rounded-full"
+                  >
+                    <CheckCircleIcon className="size-8" />
+                  </button>
+                )}
+                <div className="hidden sm:block">
+                  <div className="text-sm text-gray-600">
+                    Progreso del curso
+                  </div>
+                  <div className="w-32 bg-gray-200 rounded-full h-2 mt-1">
+                    <div
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {Math.round(progress)}% completado
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <CheckCircleIcon className="size-8 p-1 bg-green-400 rounded-full" />
+                <h1 className="font-bold">Curso completado</h1>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -375,16 +386,18 @@ export default function CourseContentPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex justify-center items-center pt-6">
-                    <button
-                      onClick={() => handleMarkCompleted(selectedContent)}
-                      className="cursor-pointer shadow-md bg-amber-200 text-amber-800 font-extrabold px-6 py-2 rounded-lg hover:bg-amber-300 transition-all"
-                    >
-                      {selectedContent.isMarked
-                        ? "Desmarcar como completada"
-                        : "Marcar como completada"}
-                    </button>
-                  </div>
+                  {!certified && (
+                    <div className="flex justify-center items-center pt-6">
+                      <button
+                        onClick={() => handleMarkCompleted(selectedContent)}
+                        className="cursor-pointer shadow-md bg-amber-200 text-amber-800 font-extrabold px-6 py-2 rounded-lg hover:bg-amber-300 transition-all"
+                      >
+                        {selectedContent.isMarked
+                          ? "Desmarcar como completada"
+                          : "Marcar como completada"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="p-12 text-center">

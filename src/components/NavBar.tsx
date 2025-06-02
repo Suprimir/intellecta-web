@@ -341,7 +341,7 @@ export default function NavBar() {
                     aria-labelledby="user-menu-button"
                   >
                     <a
-                      href={`/dashboard/profile/${user.uuid}`}
+                      href={`/dashboard/profile?uuid=${user.uuid}`}
                       className="block px-4 py-2 text-sm text-gray-700"
                       onClick={(e) => e.stopPropagation()}
                     >

@@ -124,15 +124,12 @@ CREATE TABLE contents_completed (
 );
 
 CREATE TABLE certificates (
-	id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    id INT NOT NULL AUTO_INCREMENT,
     user_ID VARCHAR(100) NOT NULL,
     course_ID INT NOT NULL,
-    FOREIGN KEY (user_ID) REFERENCES users(uuid),
-    FOREIGN KEY (course_ID) REFERENCES courses(id),
-    UNIQUE (user_ID, course_ID)
+    FOREIGN KEY (user_ID) REFERENCES users (uuid) ON DELETE CASCADE,
+    FOREIGN KEY (course_ID) REFERENCES courses (id) ON DELETE CASCADE
 );
-
-SELECT * FROM certificates;
 
 CREATE TABLE messages ( 
  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
@@ -158,7 +155,7 @@ DROP DATABASE intellecta_database;
 
 USE intellecta_database;
 
-SELECT * FROM contents_completed;
+
 SELECT * FROM categories WHERE category_ID = 1;
 SELECT * FROM users;
 SELECT * FROM categories;
