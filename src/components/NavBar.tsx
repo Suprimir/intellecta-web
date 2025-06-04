@@ -322,13 +322,18 @@ export default function NavBar() {
                   >
                     <span className="absolute -inset-1.5"></span>
                     <span className="sr-only">Open user menu</span>
-                    <Image
-                      className="rounded-full"
-                      width="40"
-                      height="40"
-                      src={`/userImages/${user.uuid}.jpeg`}
-                      alt="Profile picture"
-                    />
+                    <div className="relative">
+                      <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gray-100">
+                        <Image
+                          src={
+                            user.profilePicture || "/userImages/default.webp"
+                          }
+                          alt="Profile picture"
+                          fill
+                          className="object-cover rounded-full"
+                        />
+                      </div>
+                    </div>
                   </button>
                 </div>
                 {/*   Dropdown   */}
@@ -354,6 +359,15 @@ export default function NavBar() {
                     >
                       Mis cursos
                     </a>
+                    {user.rol === "admin" && (
+                      <a
+                        href="/panel/"
+                        className="block px-4 py-2 text-sm text-gray-700"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Panel de administración
+                      </a>
+                    )}
                     <a
                       href="/auth/login"
                       className="block px-4 py-2 text-sm text-gray-700"

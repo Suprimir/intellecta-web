@@ -9,9 +9,13 @@ CREATE TABLE users (
  email VARCHAR(70) NOT NULL UNIQUE,
  password VARCHAR(200) NOT NULL,
  role ENUM ('student', 'instructor', 'admin') NOT NULL, 
+ bio TEXT,
+ last_login DATETIME,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  profilePicture TEXT,
  verified BOOLEAN NOT NULL DEFAULT 0
 );
+SELECT * FROM users;
 
 CREATE TABLE emailToken (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
@@ -151,103 +155,22 @@ CREATE TABLE support_Tickets (
  foreign key (user_R_ID) references users (uuid) on delete cascade
 );
 
-DROP DATABASE intellecta_database;
 
-USE intellecta_database;
-
-
-SELECT * FROM categories WHERE category_ID = 1;
-SELECT * FROM users;
-SELECT * FROM categories;
-SELECT * FROM courses;
-
-SELECT 1 FROM users WHERE uuid = "8ecd4836-bd8f-4bc3-a7ca-b54424e0ba2d" AND role = 'admin' OR role = 'instructor';
-SELECT 1 FROM categories WHERE category_Description = "Skibidi";
-SELECT * FROM shoppingcarts;
-
-DROP TABLE shoppingcarts_details;
-DROP TABLE shoppingcarts;
-
-SELECT * FROM shoppingcarts_details WHERE shoppingCart_ID = 1;
-
-SELECT * FROM courses c JOIN shoppingcarts_details sd ON sd.course_ID = c.id WHERE sd.shoppingCart_ID = 1;
-
-
-SELECT c.id, c.name, c.description, c.price, c.image, c.date, c.duration, c.instructor_ID, c.category_ID FROM courses c JOIN shoppingcarts_details sd ON sd.course_ID = c.id WHERE sd.shoppingCart_ID = 1;
-
-USE intellecta_database;
-
-CREATE VIEW coursesFrontend AS
-SELECT c.id, c.name, c.description, c.image, c.`date`, c.duration, c.`instructor_ID`, CONCAT_WS(" ", u.name, u.last_name) AS instructor, c.`category_ID`, cat.description AS category_name, c.price 
+SELECT  
+    c.id, 
+    c.name, 
+    c.description, 
+    c.image, c.date, 
+    c.duration, 
+    c.instructor_ID, 
+    CONCAT_WS(" ", u.name, u.last_name) as instructor, 
+    c.category_ID, 
+    cat.description as category, 
+    c.price, 
+    c.rating 
 FROM courses c 
-JOIN users u ON u.uuid = c.`instructor_ID`
-JOIN categories cat ON c.`category_ID` = cat.id;
-
-CREATE VIEW coursesCartFrontend AS
-SELECT c.id, c.name, c.description, c.price, c.image, c.date, c.duration, c.instructor_ID, c.instructor, c.category_ID, c.category_name, sd.`shoppingCart_ID`
-FROM coursesfrontend c 
-JOIN shoppingcarts_details sd ON sd.course_ID = c.id;
-
-
-SELECT c.id, c.name, c.description, c.price, c.image, c.date, c.duration, c.instructor_ID, c.instructor, c.category_ID, c.category_name, sd.`shoppingCart_ID`
-FROM coursesfrontend c 
-JOIN shoppingcarts_details sd ON sd.course_ID = c.id;
-SELECT * FROM coursesfrontend;
-
-SELECT * FROM courses;
-
-select * from shoppingcarts_details;
-
-SELECT * FROM users;
-SELECT * from coursescartfrontend where `shoppingCart_ID` =1;
-SELECT * FROM purchased_courses;
-
-SELECT c.id,
-        pc.user_ID,
-     c.name, 
-     c.description, 
-     c.image, 
-     c.date, 
-     c.duration, 
-     c.instructor_ID, 
-     CONCAT_WS(" ", u.name, u.last_name) AS instructor, 
-     c.category_ID, 
-     cat.description AS category_name, 
-    c.price
-FROM courses c 
-JOIN users u ON u.uuid = c.instructor_ID
+JOIN users u ON c.instructor_ID = u.uuid
 JOIN categories cat ON c.category_ID = cat.id
-JOIN purchased_courses pc ON pc.course_ID = c.id
-WHERE pc.user_ID = ?;
+WHERE c.id = 1;
 
-SELECT * FROM shoppingcarts_details;
-
-
-DELETE FROM shoppingcarts_details 
-WHERE id IN (8) 
-AND shoppingCart_ID = 1;
-
-CREATE VIEW contentsFrontend AS
-SELECT uc.id AS unit_ID, 
-uc.course_ID, uc.title as unit_Title, 
-uc.unit_number as unit_Number, 
-c.id as content_ID, 
-c.title, c.description, 
-c.media_Path, c.document_Path
-FROM units_courses uc
-JOIN contents c ON c.unit_ID = uc.id;
-
-use intellecta_database;
-SELECT * FROM contentsfrontend;
-
-
-SELECT c.id, c.name, c.description, c.image, c.`date`, c.duration, c.`instructor_ID`, CONCAT_WS(" ", u.name, u.last_name) AS instructor, c.`category_ID`, cat.description AS category_name, c.price 
-FROM courses c 
-JOIN users u ON u.uuid = c.`instructor_ID`
-JOIN categories cat ON c.`category_ID` = cat.id
-WHERE c.`instructor_ID` = "2e176783-2564-43f2-90d6-b16ecc3fc3bc";
-
-
-SELECT * FROM coursesfrontend;
-
-SELECT * from contents;
+DROP DATABASE intellecta_database;

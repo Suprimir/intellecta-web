@@ -2,26 +2,33 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { Certificate, Profile, User } from "@/types/api";
 import { useAuth } from "@/libs/context/AuthContext";
 import { useSearchParams } from "next/navigation";
+import EditProfileModal from "@/components/modals/EditProfileModal";
+import { EnvelopeIcon } from "@heroicons/react/24/outline";
+import { FolderOpenIcon } from "@heroicons/react/20/solid";
 
 export default function UserProfile({
   params,
 }: {
   params: Promise<{ uuid: string }>;
 }) {
-  const defaultUser: Partial<User> = {
-    uuid: "",
-    profilePicture: null,
-    username: "",
-    email: "",
-    password: "",
-    role: "student",
-  };
-
-  const [userData, setUserData] = useState<Partial<Profile>>(defaultUser);
+  const [userData, setUserData] = useState({
+    user: {
+      username: "",
+      email: "",
+      role: "",
+      profilePicture: "",
+      bio: "",
+      created_at: "",
+    },
+    certificates: [{ courseId: 0, courseName: "" }],
+    courseCompletion: [
+      { courseId: 0, courseName: "", completionPercentage: 0 },
+    ],
+  });
   const [loading, setLoading] = useState(true);
+  const [editProfileModal, setEditProfileModal] = useState(false);
   const { user, loadingUser } = useAuth();
   const defaultProfileImage = "/userImages/default.webp";
   const searchParams = useSearchParams();
@@ -42,7 +49,8 @@ export default function UserProfile({
         await waitForAuth();
 
         const res = await fetch(`/api/profile/${uuid}`);
-        const userData: Partial<User> = await res.json();
+        const userData = await res.json();
+        console.log("Datos del usuario:", userData);
         setUserData(userData);
       } catch (err) {
         console.error(err);
@@ -64,36 +72,34 @@ export default function UserProfile({
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
             {/* Foto de perfil */}
-            <div className="relative w-32 h-32 md:w-40 md:h-40">
-              <div className="rounded-full overflow-hidden border-4 border-white shadow-lg">
+            <div className="relative">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
                 <Image
                   src={
-                    userData.profilePicture
-                      ? userData.profilePicture
+                    userData.user.profilePicture
+                      ? userData.user.profilePicture
                       : defaultProfileImage
                   }
                   alt="Foto de perfil"
-                  width={160}
-                  height={160}
-                  className="object-cover"
+                  fill
+                  className="object-cover p-1 rounded-full"
                 />
               </div>
             </div>
 
             {/* Información básica */}
             <div className="text-center md:text-left space-y-2">
-              <h1 className="text-3xl font-bold">{userData.username}</h1>
+              <h1 className="text-3xl font-bold">{userData.user.username}</h1>
               <div className="flex justify-center md:justify-start gap-4 mt-2">
                 <span className="flex items-center gap-1">
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                  </svg>
-                  {userData.email}
+                  <EnvelopeIcon className="w-5 h-5 text-white" />
+                  {userData.user.email}
+                </span>
+              </div>
+              <div className="flex justify-center md:justify-start gap-4 mt-2">
+                <span className="flex items-center gap-1">
+                  <FolderOpenIcon className="w-5 h-5 text-white" />
+                  {userData.user.created_at}
                 </span>
               </div>
             </div>
@@ -102,9 +108,7 @@ export default function UserProfile({
             {uuid === user?.uuid && (
               <div className="mt-4 md:mt-0 md:ml-auto">
                 <button
-                  onClick={() => {
-                    console.log(user);
-                  }}
+                  onClick={() => setEditProfileModal(true)}
                   className="bg-white text-teal-600 px-6 py-2 rounded-md font-medium hover:bg-teal-50 transition-colors"
                 >
                   Editar perfil
@@ -125,21 +129,7 @@ export default function UserProfile({
               <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-4">
                 Sobre mí
               </h2>
-              <p className="text-gray-700"></p>
-            </div>
-
-            {/* Datos personales */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-4">
-                Datos
-              </h2>
-            </div>
-
-            {/* Redes sociales */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-4">
-                Redes sociales
-              </h2>
+              <p className="text-gray-700">{userData.user.bio}</p>
             </div>
           </div>
 
@@ -150,6 +140,33 @@ export default function UserProfile({
               <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-4">
                 Progreso académico
               </h2>
+
+              <div className="space-y-5">
+                {userData.courseCompletion &&
+                  userData.courseCompletion.map(
+                    (course, index) =>
+                      course.completionPercentage !== 100 && (
+                        <div key={index}>
+                          <div className="flex justify-between mb-1">
+                            <span className="font-medium text-gray-700">
+                              {course.courseName}
+                            </span>
+                            <span className="text-teal-600">
+                              {course.completionPercentage}
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-teal-500 h-2 rounded-full"
+                              style={{
+                                width: `${course.completionPercentage}%`,
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                      )
+                  )}
+              </div>
             </div>
 
             {/* Certificaciones */}
@@ -157,13 +174,38 @@ export default function UserProfile({
               <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-4">
                 Certificaciones
               </h2>
-
-              {userData.certificates &&
-                userData.certificates.map((certificate, index) => (
-                  <div key={index}>
-                    <h1>{certificate.name}</h1>
-                  </div>
-                ))}
+              <div className="space-y-4">
+                {userData.certificates &&
+                  userData.certificates.map((certificate, index) => (
+                    <div key={index} className="flex gap-4 items-start">
+                      <div className="bg-teal-100 p-3 rounded-lg">
+                        <svg
+                          className="w-8 h-8 text-teal-600"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-800">
+                          Certificado Oficial en Desarrollo Web Full Stack
+                        </h3>
+                        <p className="text-gray-600">
+                          INTELLECTA • Completado en marzo 2024
+                        </p>
+                        <div className="mt-2">
+                          <a
+                            href="#"
+                            className="text-sm text-teal-600 hover:underline"
+                          >
+                            Ver curso
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
 
               <div className="mt-6">
                 <a
@@ -185,16 +227,15 @@ export default function UserProfile({
                 </a>
               </div>
             </div>
-
-            {/* Cursos en progreso */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-800 border-b pb-3 mb-4">
-                Cursos en progreso
-              </h2>
-            </div>
           </div>
         </div>
       </div>
+      {editProfileModal && (
+        <EditProfileModal
+          user={userData.user}
+          closeModal={() => setEditProfileModal(false)}
+        />
+      )}
     </div>
   );
 }

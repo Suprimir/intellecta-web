@@ -12,6 +12,7 @@ type User = {
   username: string;
   email: string;
   rol?: string;
+  profilePicture?: string | null;
 };
 
 interface AuthContextType {
@@ -47,6 +48,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
             username: userData.username,
             email: userData.email,
             rol: userData.rol,
+            profilePicture:
+              userData.profilePicture || "/userImages/default.webp",
           });
         } else {
           setUser(null);

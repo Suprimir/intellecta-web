@@ -20,6 +20,8 @@ export type User = {
   password: string;
   role: "student" | "instructor" | "admin";
   profilePicture: string | null;
+  bio: string | null;
+  createdAt: Date;
   lastLoggedIn: Date;
   verified: boolean;
 };
@@ -144,6 +146,11 @@ export interface Certificate {
   name: string;
 }
 
-export interface Profile extends User {
-  certificates: Certificate[];
+export interface TotalContents {
+  content_ID: number;
+  unit_ID: number;
+  course_ID: number;
+  name: string;
+  completedContents: number;
+  totalContents: number;
 }
