@@ -45,36 +45,36 @@ export default function PanelCoursesPage() {
   const searchParams = useSearchParams();
   const courseId = searchParams.get("courseId");
 
-  useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        const res = await fetch(`/api/courses/getByID/${courseId}/contents`);
-        const data: CourseWithUnitContent[] = await res.json();
+  const loadInitialData = async () => {
+    try {
+      const res = await fetch(`/api/courses/getByID/${courseId}/contents`);
+      const data: CourseWithUnitContent[] = await res.json();
 
-        setData(data);
+      setData(data);
 
-        if (data) {
-          setPrice(String(data[0].price));
-          setImage(data[0].image ? data[0].image : "");
-        }
-        const waitForAuth = () =>
-          new Promise<void>((resolve) => {
-            const interval = setInterval(() => {
-              if (!loadingUser) {
-                clearInterval(interval);
-                resolve();
-              }
-            }, 100);
-          });
-
-        await waitForAuth();
-      } catch (err) {
-        console.error("Error al inciar los datos:", err);
-      } finally {
-        setLoading(false);
+      if (data) {
+        setPrice(String(data[0].price));
+        setImage(data[0].image ? data[0].image : "");
       }
-    };
+      const waitForAuth = () =>
+        new Promise<void>((resolve) => {
+          const interval = setInterval(() => {
+            if (!loadingUser) {
+              clearInterval(interval);
+              resolve();
+            }
+          }, 100);
+        });
 
+      await waitForAuth();
+    } catch (err) {
+      console.error("Error al inciar los datos:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadInitialData();
   }, [loadingUser]);
 
@@ -123,7 +123,7 @@ export default function PanelCoursesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 px-6 py-10">
+    <div className="min-h-screen px-6 py-10">
       {data && (
         <div className="max-w-6xl mx-auto">
           <button
@@ -339,19 +339,19 @@ export default function PanelCoursesPage() {
           </div>
         </div>
       )}
-      {unitCourseModal && data && (
-        <UnitCourseModal
-          uuid={user?.uuid ? user.uuid : ""}
-          courseId={data[0].id}
-          mode={editMode}
-          unit={selectedUnit}
-          closeModal={() => {
-            setUnitCourseModal(false);
-            setEditMode(null);
-            setSelectedUnit(null);
-          }}
-        />
-      )}
+      <UnitCourseModal
+        uuid={user ? user.uuid : ""}
+        courseId={data ? data[0].id : undefined}
+        mode={editMode}
+        unit={selectedUnit}
+        visible={unitCourseModal}
+        refreshData={loadInitialData}
+        closeModal={() => {
+          setUnitCourseModal(false);
+          setEditMode(null);
+          setSelectedUnit(null);
+        }}
+      />
       {contentCourseModal && (
         <ContentCourseModal
           uuid={user ? user?.uuid : ""}

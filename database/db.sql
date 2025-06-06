@@ -14,8 +14,8 @@ CREATE TABLE users (
  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  profilePicture TEXT,
  verified BOOLEAN NOT NULL DEFAULT 0
+ active BOOLEAN NOT NULL DEFAULT 1,
 );
-SELECT * FROM users;
 
 CREATE TABLE emailToken (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
@@ -82,6 +82,7 @@ CREATE TABLE orders_details (
     FOREIGN KEY (course_ID) REFERENCES courses (id) ON DELETE CASCADE
 );
 
+
 CREATE TABLE purchased_courses (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     user_ID VARCHAR(100) NOT NULL,
@@ -97,7 +98,7 @@ CREATE TABLE payments (
     payment_intent VARCHAR(255) NOT NULL,
     amount FLOAT NOT NULL,
     currency VARCHAR(8) NOT NULL,
-    status ENUM("succeded", "pending", "incomplete", "expired", "failed") NOT NULL,
+    status ENUM("succeeded", "pending", "incomplete", "expired", "failed") NOT NULL,
     user_ID VARCHAR(100) NOT NULL
 );
 
@@ -173,4 +174,6 @@ JOIN users u ON c.instructor_ID = u.uuid
 JOIN categories cat ON c.category_ID = cat.id
 WHERE c.id = 1;
 
+
+SELECT * FROM categories;
 DROP DATABASE intellecta_database;

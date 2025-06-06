@@ -15,6 +15,7 @@ import { useAuth } from "@/libs/context/AuthContext";
 import { useRouter } from "next/navigation";
 import React from "react";
 import UserModal from "@/components/modals/UserModal";
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
 
 export default function PanelCoursesPage() {
   const [loading, setLoading] = useState(true);
@@ -23,6 +24,7 @@ export default function PanelCoursesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [editMode, setEditMode] = useState<"create" | "edit" | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [confirmationModal, setConfirmationModal] = useState(false);
   const [itemsPerPage] = useState(7);
   const { user, loadingUser } = useAuth();
   const router = useRouter();
@@ -36,30 +38,30 @@ export default function PanelCoursesPage() {
   const startItem = startIndex + 1;
   const endItem = Math.min(endIndex, totalItems);
 
+  const loadInitialData = async () => {
+    try {
+      const res = await fetch("/api/users");
+      const data: User[] = await res.json();
+      setUsers(data);
+    } catch (err) {
+      console.error("Error al inciar los datos:", err);
+    } finally {
+      const waitForAuth = () =>
+        new Promise<void>((resolve) => {
+          const interval = setInterval(() => {
+            if (!loadingUser) {
+              clearInterval(interval);
+              resolve();
+            }
+          }, 100);
+        });
+
+      await waitForAuth();
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        const res = await fetch("/api/users");
-        const data: User[] = await res.json();
-        setUsers(data);
-      } catch (err) {
-        console.error("Error al inciar los datos:", err);
-      } finally {
-        const waitForAuth = () =>
-          new Promise<void>((resolve) => {
-            const interval = setInterval(() => {
-              if (!loadingUser) {
-                clearInterval(interval);
-                resolve();
-              }
-            }, 100);
-          });
-
-        await waitForAuth();
-        setLoading(false);
-      }
-    };
-
     loadInitialData();
   }, [loadingUser]);
 
@@ -108,6 +110,28 @@ export default function PanelCoursesPage() {
     return pages;
   };
 
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
+
+    try {
+      const res = await fetch(`/api/users/byUUID/${selectedUser.uuid}/delete`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        setUsers((prevUsers) =>
+          prevUsers.filter((user) => user.uuid !== selectedUser.uuid)
+        );
+        setConfirmationModal(false);
+        setSelectedUser(null);
+      } else {
+        console.error("Error al eliminar el curso");
+      }
+    } catch (err) {
+      console.error("Error al eliminar el curso:", err);
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="mb-8 pt-16 lg:pt-0">
@@ -127,7 +151,7 @@ export default function PanelCoursesPage() {
               setSelectedUser(null);
               setUserModal(true);
             }}
-            className="cursor-pointer text-white flex gap-2 bg-[#599f96] hover:bg-[#77afa1] p-2 rounded-xl font-extrabold"
+            className="cursor-pointer text-white flex gap-2 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 transition transform hover:-translate-y-0.5 p-2 rounded-xl font-extrabold"
           >
             <FolderPlusIcon className="size-6" />
             Agregar usuario
@@ -177,12 +201,12 @@ export default function PanelCoursesPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 ">
                 {currentUsers.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
-                      className="px-6 py-8 text-center text-gray-500"
+                      colSpan={6}
+                      className="px-6 py-8 text-center bg-gray-50 text-gray-500"
                     >
                       {loading
                         ? "Cargando datos..."
@@ -226,7 +250,11 @@ export default function PanelCoursesPage() {
                             <PencilSquareIcon className="size-4" />
                           </button>
                           <button
-                            className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-md transition-colors"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setConfirmationModal(true);
+                            }}
+                            className="cursor-pointer bg-red-500 hover:bg-red-600 text-white p-2 rounded-md transition-colors"
                             title="Eliminar curso"
                           >
                             <TrashIcon className="size-4" />
@@ -322,11 +350,19 @@ export default function PanelCoursesPage() {
           )}
         </div>
       </div>
-      {userModal && (
-        <UserModal
-          user={selectedUser}
-          mode={editMode}
-          closeModal={() => setUserModal(false)}
+      <UserModal
+        visible={userModal}
+        user={selectedUser}
+        mode={editMode}
+        closeModal={() => setUserModal(false)}
+        refreshTable={() => loadInitialData()}
+      />
+      {confirmationModal && selectedUser && (
+        <ConfirmationModal
+          visible={confirmationModal}
+          onClose={() => setConfirmationModal(false)}
+          onConfirm={handleDeleteUser}
+          name={selectedUser?.username}
         />
       )}
     </div>

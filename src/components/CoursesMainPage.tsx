@@ -23,26 +23,26 @@ export default function CoursesMainPage({ courses }: CoursesMainPageProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-[95%] sm:max-w-[90%] md:max-w-[85%] lg:max-w-[82%] mx-auto">
         {courses.length > 0 &&
           courses.map((course) => (
-            <div key={course.id}>
+            <div
+              key={course.id}
+              className="hover:scale-105 transition transform duration-300"
+            >
               <CourseCard course={course} isInMainPage={true} />
             </div>
           ))}
       </div>
 
       <div className="mx-auto pt-6 sm:pt-7 lg:pt-8 pb-6 sm:pb-7 lg:pb-8 max-w-[95%] sm:max-w-[90%] md:max-w-[85%] lg:max-w-[80%] text-center sm:text-left">
-        <div
+        <button
           onClick={() => router.push("/home/courses")}
-          className="cursor-pointer border-[#0D7682] border-2 inline-flex items-center p-2 hover:bg-[#0D7682]/5 transition-colors"
+          className="cursor-pointer border-teal-600 text-teal-600 border-2 inline-flex items-center p-3 hover:bg-teal-600/5 transition duration-300 transform hover:translate-x-1 hover:scale-105 rounded-lg"
         >
-          <Button
-            text="Todos los cursos gratis"
-            className="text-[#0D7682] font-medium"
-          />
+          Todos los cursos gratis
           <ArrowLongRightIcon
             aria-hidden="true"
-            className="size-6 text-[#0D7682] sm:size-5 ml-1 flex-none group-data-open:rotate-180"
+            className="size-6 sm:size-5 ml-1 flex-none group-data-open:rotate-180"
           />
-        </div>
+        </button>
       </div>
     </div>
   );

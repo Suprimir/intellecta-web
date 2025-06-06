@@ -113,9 +113,6 @@ export default function ShoppingCart() {
                           alt={item.name}
                           className="w-full h-full object-cover rounded-md"
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 rounded-md flex items-center justify-center transition-opacity">
-                          <Play className="h-8 w-8 text-white" />
-                        </div>
                       </div>
 
                       <div className="flex-1 ml-0 sm:ml-6">
@@ -160,41 +157,6 @@ export default function ShoppingCart() {
                   ))}
                 </div>
               )}
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-teal-600 mb-4">
-                Accesos al Curso
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-md bg-blue-50 border-blue-200">
-                  <div className="flex items-center">
-                    <div className="h-5 w-5 rounded-full bg-blue-600 mr-3 flex items-center justify-center">
-                      <div className="h-2 w-2 rounded-full bg-white"></div>
-                    </div>
-                    <div>
-                      <p className="font-medium">Acceso de por Vida</p>
-                      <p className="text-sm text-gray-500">
-                        Accede al contenido del curso para siempre.
-                      </p>
-                    </div>
-                  </div>
-                  <span className="font-semibold text-green-600">Incluido</span>
-                </div>
-
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-md">
-                  <div className="flex items-center">
-                    <div className="h-5 w-5 rounded-full border border-gray-300 mr-3"></div>
-                    <div>
-                      <p className="font-medium">Certificado</p>
-                      <p className="text-sm text-gray-500">
-                        Recibe un certificado valido por cada curso.
-                      </p>
-                    </div>
-                  </div>
-                  <span className="font-semibold">+MX$39.99</span>
-                </div>
-              </div>
             </div>
           </div>
 

@@ -3,12 +3,10 @@ import React from "react";
 export default function CoursesPageSkeleton() {
   return (
     <div className="w-full max-w-screen-xl mx-auto px-4 py-6">
-      {/* Search bar skeleton */}
       <div className="mb-6">
         <div className="h-10 bg-gray-100 rounded-lg w-full max-w-md animate-pulse"></div>
       </div>
 
-      {/* Filters bar skeleton */}
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
           <div className="h-8 w-24 bg-gray-200 rounded-md animate-pulse"></div>

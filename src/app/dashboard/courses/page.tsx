@@ -101,7 +101,7 @@ export default function CourseContentPage() {
 
           // Obtener los contenidos completados por el usuario
           const resCompleted = await fetch(
-            `/api/contents/getByUUID/${user?.uuid}/completed`,
+            `/api/contents/byUUID/${user?.uuid}/completed`,
             {
               method: "POST",
               body: JSON.stringify({ contentsIds }),
@@ -131,7 +131,7 @@ export default function CourseContentPage() {
 
   const getCompleted = async () => {
     const resCompleted = await fetch(
-      `/api/contents/getByUUID/${user?.uuid}/completed`,
+      `/api/contents/byUUID/${user?.uuid}/completed`,
       {
         method: "POST",
         body: JSON.stringify({ contentsIds }),
@@ -196,8 +196,8 @@ export default function CourseContentPage() {
 
   const handleMarkCompleted = async (content: Content) => {
     const endpoint = content.isMarked
-      ? `/api/contents/getByID/${content.id}/completed/remove`
-      : `/api/contents/getByID/${content.id}/completed/add`;
+      ? `/api/contents/byID/${content.id}/completed/remove`
+      : `/api/contents/byID/${content.id}/completed/add`;
 
     const res = await fetch(endpoint, {
       method: "POST",
@@ -235,7 +235,7 @@ export default function CourseContentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">

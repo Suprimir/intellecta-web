@@ -21,18 +21,18 @@ export default function PanelLayout({ children }: PanelLayoutProps) {
 
   return (
     <div
-      className={`min-h-screen ${inter.className} hydrated grid transition-all duration-300`}
+      className={`min-h-screen ${inter.className} bg-gradient-to-br from-gray-50 to-gray-50 hydrated grid transition-all duration-300`}
       style={{
-        gridTemplateColumns: isSidebarCollapsed ? "80px 1fr" : "256px 1fr",
+        gridTemplateColumns: isSidebarCollapsed ? "100px 1fr" : "305px 1fr",
         gridTemplateRows: "1fr auto",
       }}
     >
-      <div className="bg-gray-50 relative lg:col-span-1">
+      <div className="relative lg:col-span-1">
         <Sidebar isCollapsed={isSidebarCollapsed} onToggle={toggleSidebar} />
       </div>
 
-      <div className="bg-gray-50 relative col-span-2 lg:col-span-1">
-        <main className="h-full flex items-center justify-center p-6">
+      <div className="relative col-span-2 lg:col-span-1 py-8">
+        <main className="h-full flex justify-center p-6">
           <div className="w-full max-w-7xl mx-auto">{children}</div>
         </main>
       </div>

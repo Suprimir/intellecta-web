@@ -65,7 +65,7 @@ export default function FilterButton({
     return (
       <button
         onClick={() => handleSelect()}
-        className={`cursor-pointer flex items-center px-4 py-2 text-sm rounded-xl ${
+        className={`cursor-pointer flex items-center px-4 py-2 text-sm rounded-xl transition-all duration-200 trasnform hover:-translate-y-0.5 ${
           selected ? "shadow bg-gray-100" : "shadow bg-white"
         }`}
       >
@@ -79,7 +79,7 @@ export default function FilterButton({
     <div className="relative inline-block" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`cursor-pointer flex items-center px-4 py-2 text-sm rounded-xl bg-white shadow`}
+        className={`cursor-pointer flex items-center px-4 py-2 text-sm rounded-xl bg-white shadow transition-all duration-200 trasnform hover:-translate-y-0.5`}
       >
         {icon && <span className="mr-2">{icon}</span>}
         {selectedCategory || label}

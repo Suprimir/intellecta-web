@@ -2,9 +2,11 @@ import { NextResponse, NextRequest } from "next/server";
 import { pool } from "@/libs/mysql";
 import { Course } from "@/types/api";
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const uuid = searchParams.get("uuid");
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ uuid: string }> }
+) {
+  const { uuid } = await params;
 
   try {
     const query = `SELECT c.id,
@@ -16,7 +18,8 @@ export async function GET(request: NextRequest) {
                             c.duration, 
                             c.instructor_ID, 
                             CONCAT_WS(" ", u.name, u.last_name) AS instructor, 
-                            c.category_ID, 
+                            c.category_ID,
+                            c.rating,
                             cat.description AS category_name, 
                             c.price
                         FROM courses c 

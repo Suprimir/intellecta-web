@@ -44,7 +44,14 @@ export default function DashboardPanel() {
   }, [loadingUser]);
 
   if (loading) {
-    return <DashboardPageSkeleton />;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto mb-4"></div>
+          <p className="text-yellow-700 font-medium">Cargando contenido...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -57,8 +64,7 @@ export default function DashboardPanel() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Total de Cursos */}
-        <div className="bg-white rounded-2xl shadow p-6 border border-gray-100">
+        <div className="bg-white rounded-2xl shadow p-6 border border-gray-100 hover:scale-105 hover:shadow-lg transition duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Cursos</p>
@@ -72,8 +78,7 @@ export default function DashboardPanel() {
           </div>
         </div>
 
-        {/* Total de Pagos */}
-        <div className="bg-white rounded-2xl shadow p-6 border border-gray-100">
+        <div className="bg-white rounded-2xl shadow p-6 border border-gray-100 hover:scale-105 hover:shadow-lg transition duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Pagos</p>
@@ -87,7 +92,7 @@ export default function DashboardPanel() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow p-6 border border-gray-100">
+        <div className="bg-white rounded-2xl shadow p-6 border border-gray-100 hover:scale-105 hover:shadow-lg transition duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">
@@ -103,8 +108,7 @@ export default function DashboardPanel() {
           </div>
         </div>
 
-        {/* Total de Usuarios */}
-        <div className="bg-white rounded-2xl shadow p-6 border border-gray-100">
+        <div className="bg-white rounded-2xl shadow p-6 border border-gray-100 hover:scale-105 hover:shadow-lg transition duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">

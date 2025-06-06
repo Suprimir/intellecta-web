@@ -9,6 +9,7 @@ import { useAuth } from "@/libs/context/AuthContext";
 import { Course } from "@/types/api";
 import HomeSkeleton from "@/components/skeletons/HomeSkeleton";
 import Button from "@/components/common/Button";
+import { ChevronRightIcon } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
@@ -49,26 +50,33 @@ export default function HomePage() {
 
   return (
     <div className="grid grid-cols-3 grid-rows-1">
-      <div className="col-span-3 row-start-1 bg-[#FFBD008A] h-[400px] lg:h-[600px]">
+      <div className="col-span-3 row-start-1 bg-gradient-to-br from-yellow-500 to-yellow-600 h-[400px] lg:h-[600px]">
         <div className="lg:grid lg:grid-cols-4 h-full max-w-[90%] mx-auto gap-6">
           <div className="col-span-4 xl:col-span-2 2xl:col-span-3 flex flex-col h-full">
             <div className="flex-1 flex flex-col justify-center xl:items-start space-y-8 items-center">
-              <h1 className="text-center xl:text-start text-3xl sm:text-4xl md:text-5xl lg:text-[5rem] xl:text-6xl 2xl:text-[5rem] font-extrabold leading-tight max-w-[100%]">
+              <h1
+                className="text-center xl:text-start text-3xl sm:text-4xl md:text-5xl lg:text-[5rem] xl:text-6xl 2xl:text-[5rem] font-black leading-tight max-w-[100%]"
+                style={{ WebkitTextStroke: "2px black" }}
+              >
                 Contamos con +20 cursos con certificados en diversas áreas
               </h1>
               {user && (
-                <Button
-                  text="Ir a mis cursos"
+                <button
                   onClick={() => router.push("/dashboard")}
-                  className="bg-black text-white font-bold py-3 px-6 rounded-lg text-lg md:text-2xl hover:bg-gray-800 transition-colors whitespace-nowrap"
-                />
+                  className="bg-gradient-to-t cursor-pointer from-gray-800 to-gray-900 hover:from-gray-900 hover:to-gray-950 text-white font-bold py-3 px-6 rounded-lg text-lg md:text-2xl hover:bg-gray-800 transition duration-300 transform hover:-translate-y-0.5 hover:scale-105 whitespace-nowrap"
+                >
+                  Ir a mis cursos
+                  <ChevronRightIcon className="inline size-6 ml-2 animate-pulse" />
+                </button>
               )}
               {!user && (
-                <Button
-                  text="Regístrate gratis"
+                <button
                   onClick={() => router.push("/auth/register")}
-                  className="bg-black text-white font-bold py-3 px-6 rounded-lg text-lg md:text-2xl hover:bg-gray-800 transition-colors whitespace-nowrap"
-                />
+                  className="bg-gradient-to-t cursor-pointer from-gray-800 to-gray-900 hover:from-gray-900 hover:to-gray-950 text-white font-bold py-3 px-6 rounded-lg text-lg md:text-2xl hover:bg-gray-800 transition duration-300 transform hover:-translate-y-0.5 hover:scale-105 whitespace-nowrap"
+                >
+                  Regístrate gratis{" "}
+                  <ChevronRightIcon className="inline size-6 ml-2 animate-pulse" />
+                </button>
               )}
             </div>
           </div>

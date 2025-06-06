@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   XMarkIcon,
   ArrowDownTrayIcon,
@@ -11,16 +11,29 @@ import { useAlert } from "@/libs/context/AlertContext";
 
 interface EditProfileModal {
   user: any;
+  visible?: boolean;
+  refreshProfile: () => void;
   closeModal: () => void;
 }
 
 export default function EditProfileModal({
   user,
+  visible = false,
+  refreshProfile,
   closeModal,
 }: EditProfileModal) {
   const [image, setImage] = useState<string>();
   const [imageFile, setImageFile] = useState<File>();
+  const [isVisible, setIsVisible] = useState(false);
   const { showAlert } = useAlert();
+
+  useEffect(() => {
+    if (visible) {
+      setIsVisible(true);
+    } else {
+      setTimeout(() => setIsVisible(false), 200);
+    }
+  }, [visible]);
 
   const handleSaveUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,30 +50,45 @@ export default function EditProfileModal({
 
     const data = await res.json();
     if (res.status === 200) {
-      showAlert(data.message, "success", "Usuario actualizad", 2000);
+      showAlert(data.message, "success", "Usuario actualizado", 2000);
+      refreshProfile();
+      closeModal();
     } else {
       showAlert(data.message, "error", "Error", 2000);
     }
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+    <div
+      className={`fixed inset-0 flex items-center justify-center bg-black/50 transition-opacity duration-200 ${
+        visible && isVisible ? "opacity-100" : "opacity-0"
+      } ${isVisible || visible ? "block" : "hidden"}`}
+    >
       <form
         onSubmit={handleSaveUser}
-        className="bg-white w-full max-w-xl h-auto rounded-2xl p-6 flex flex-col overflow-auto"
+        className="bg-white w-full max-w-xl h-auto rounded-2xl flex flex-col overflow-auto"
       >
-        <div className="flex justify-between items-center">
-          <h1 className="font-extrabold text-lg">Editar Perfil</h1>
-          <XMarkIcon
-            onClick={closeModal}
-            className="size-6 bg-red-400 rounded-md cursor-pointer"
-          />
+        <div className="border-b shadow-md">
+          <div className="flex justify-between items-center p-4">
+            <div className="flex items-center gap-2">
+              <div className="cursor-pointer hover:bg-gray-100 rounded-full transition-colors duration-300 p-1">
+                <XMarkIcon onClick={closeModal} className="size-8" />
+              </div>
+              <h1 className="font-extrabold text-lg">Editar Perfil</h1>
+            </div>
+            <button
+              type="submit"
+              className="flex text-white items-center gap-2 p-2 rounded-lg cursor-pointer bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 transition-colors duration-300 shadow-md"
+            >
+              <ArrowDownTrayIcon className="size-6" />
+              <span className="font-extrabold">Guardar</span>
+            </button>
+          </div>
         </div>
 
-        <div className="my-6">
+        <div className="my-6 px-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <p className="font-bold">Foto de perfil</p>
               <div className="flex justify-center mb-4">
                 <div className="relative">
                   <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
@@ -78,9 +106,9 @@ export default function EditProfileModal({
 
                     <label
                       htmlFor="profileImage"
-                      className="cursor-pointer absolute bottom-0 right-0 bg-blue-500 hover:bg-blue-600 rounded-full p-1.5 shadow-lg transition-colors"
+                      className="cursor-pointer absolute bottom-0 right-0 bg-blue-500 hover:bg-blue-600 rounded-full p-1.5 shadow-lg transition-colors duration-200 flex items-center justify-center"
                     >
-                      <CameraIcon className="size-4 text-white" />
+                      <CameraIcon className="size-4 hover:size-6 transition-all text-white" />
                     </label>
                     <input
                       id="profileImage"
@@ -100,36 +128,31 @@ export default function EditProfileModal({
                 </div>
               </div>
             </div>
-            <div className="col-span-2">
-              <p className="text-sm font-extrabold text-gray-600">
-                Nombre de usuario:
-              </p>
+            <div className="col-span-2 border-1 border-gray-300 rounded-lg p-2">
+              <label htmlFor="usernameInput">
+                <p className="text-sm text-gray-400">Nombre de usuario:</p>
+              </label>
               <input
+                id="usernameInput"
                 name="username"
-                placeholder={user ? user.username : ""}
-                className="w-full bg-gray-100 p-2 rounded-xl"
+                defaultValue={user ? user.username : ""}
+                className="w-full focus:outline-none text-black"
               />
             </div>
-            <div className="col-span-2">
-              <p className="text-sm font-extrabold text-gray-600">Sobre mí:</p>
+            <div className="col-span-2 border-1 border-gray-300 rounded-lg p-2">
+              <label htmlFor="bioInput">
+                <p className="text-sm text-gray-400">Sobre mí:</p>
+              </label>
               <textarea
+                id="bioInput"
                 name="bio"
                 placeholder="Cuéntanos sobre ti..."
+                defaultValue={user.bio || ""}
                 rows={3}
-                className="w-full bg-gray-100 p-2 rounded-xl resize-none transition-colors"
+                className="w-full focus:outline-none text-black resize-none"
               />
             </div>
           </div>
-        </div>
-
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="cursor-pointer bg-green-400 inline-flex items-center p-2 gap-2 rounded-xl"
-          >
-            <ArrowDownTrayIcon className="size-6" />
-            <span className="font-extrabold">Guardar</span>
-          </button>
         </div>
       </form>
     </div>

@@ -67,11 +67,15 @@ export default function CoursePlatform() {
   }, [loadingUser]);
 
   if (loading) {
-    return <CoursesPageSkeleton />;
+    return (
+      <div className="bg-gradient-to-br from-yellow-50 to-orange-50">
+        <CoursesPageSkeleton />
+      </div>
+    );
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen p-6">
+    <div className="bg-gradient-to-br from-yellow-50 to-orange-50 min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
         {/* Search Bar */}
         <div className="mb-6 relative bg-white">
@@ -79,7 +83,7 @@ export default function CoursePlatform() {
             <input
               type="text"
               placeholder="Search for courses..."
-              className="w-full p-3 pl-10 shadow rounded-xl"
+              className="w-full p-3 pl-10 shadow rounded-xl focus:ring-0 focus:outline-none focus:shadow-lg transition-all duration-200"
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <MagnifyingGlassIcon className="absolute left-3 top-3.5 text-gray-400 size-6" />
@@ -106,14 +110,13 @@ export default function CoursePlatform() {
           </div>
           {user && (
             <div>
-              <Button
-                text="Ir a mis cursos"
+              <button
                 onClick={() => router.push("/dashboard")}
-                className="cursor-pointer rounded-xl flex font-medium text-center transition-all duration-200 border-2 shadow shadow-blue-500 border-blue-500 text-blue-500"
-                iconPosition="right"
+                className="cursor-pointer bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               >
-                <ArrowRightIcon className="size-6" />
-              </Button>
+                Ir a mis cursos
+                <ArrowRightIcon className="size-6 ms-4" />
+              </button>
             </div>
           )}
         </div>

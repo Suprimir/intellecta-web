@@ -28,7 +28,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Obtener todos los usuarios
-    const users: User[] = await pool.query("SELECT * FROM users");
+    const users: User[] = await pool.query(
+      "SELECT * FROM users WHERE active = 1"
+    );
 
     if (users.length === 0) {
       return NextResponse.json({ message: "No hay usuarios" }, { status: 400 });

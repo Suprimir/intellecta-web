@@ -6,6 +6,8 @@ import { PlayIcon as PlayIconSolid } from "@heroicons/react/24/solid";
 import { CourseWithUnitContent } from "@/types/api";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/libs/context/AuthContext";
+import { useAlert } from "@/libs/context/AlertContext";
+import { CirclePlus, LoaderCircle, Trash2 } from "lucide-react";
 
 export default function CourseContentView({
   params,
@@ -13,9 +15,11 @@ export default function CourseContentView({
   params: Promise<{ courseId: string }>;
 }) {
   const [loading, setLoading] = useState(true);
+  const [handleLoading, setHandleLoading] = useState(false);
   const [course, setCourse] = useState<CourseWithUnitContent>();
   const [isAdded, setIsAdded] = useState(false);
   const { user, loadingUser } = useAuth();
+  const { showAlert } = useAlert();
 
   const router = useRouter();
 
@@ -51,6 +55,38 @@ export default function CourseContentView({
 
     loadInitialData();
   }, [loadingUser]);
+
+  const handleCartAction = async () => {
+    setHandleLoading(true);
+
+    try {
+      const endpoint = isAdded ? "/api/cart/remove" : "/api/cart/add";
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ courseId: course?.id }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al procesar la solicitud");
+      }
+
+      setIsAdded(!isAdded);
+    } catch (error) {
+      console.error(error);
+      showAlert(
+        "Debes estar loggeado para realizar esta accion.",
+        "error",
+        "Error",
+        2000
+      );
+    } finally {
+      setHandleLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -184,27 +220,43 @@ export default function CourseContentView({
                     {course.location !== "purchased" ? (
                       isAdded ? (
                         <button
-                          onClick={() =>
-                            router.push(
-                              `/dashboard/courses?courseId=${course.id}`
-                            )
-                          }
-                          className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white cursor-pointer py-3 px-4 rounded-xl font-medium hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                          onClick={() => handleCartAction()}
+                          disabled={handleLoading}
+                          className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white cursor-pointer py-3 px-4 rounded-xl font-medium hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                         >
-                          <PlayIconSolid className="size-5 mr-2" />
-                          Remover del Carrito
+                          {handleLoading ? (
+                            <svg
+                              className="size-5 animate-spin"
+                              viewBox="0 0 24 24"
+                            >
+                              <LoaderCircle />
+                            </svg>
+                          ) : (
+                            <>
+                              <Trash2 className="size-5 mr-2" />
+                              Remover del Carrito
+                            </>
+                          )}
                         </button>
                       ) : (
                         <button
-                          onClick={() =>
-                            router.push(
-                              `/dashboard/courses?courseId=${course.id}`
-                            )
-                          }
-                          className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white cursor-pointer py-3 px-4 rounded-xl font-medium hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                          onClick={() => handleCartAction()}
+                          disabled={handleLoading}
+                          className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white cursor-pointer py-3 px-4 rounded-xl font-medium hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                         >
-                          <PlayIconSolid className="size-5 mr-2" />
-                          Agregar al Carrito
+                          {handleLoading ? (
+                            <svg
+                              className="size-5 animate-spin"
+                              viewBox="0 0 24 24"
+                            >
+                              <LoaderCircle />
+                            </svg>
+                          ) : (
+                            <>
+                              <CirclePlus className="size-5 mr-2" />
+                              Agregar al Carrito
+                            </>
+                          )}
                         </button>
                       )
                     ) : (

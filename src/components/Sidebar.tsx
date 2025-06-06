@@ -3,20 +3,21 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  HomeIcon,
-  AcademicCapIcon,
-  UsersIcon,
-  CreditCardIcon,
-  Bars3Icon,
-  XMarkIcon,
-  UserGroupIcon,
-  BellIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/24/outline";
 import { useAuth } from "@/libs/context/AuthContext";
 import Image from "next/image";
+import {
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  GraduationCap,
+  Home,
+  LogOut,
+  Menu,
+  User,
+  X,
+  Settings,
+  Bell,
+} from "lucide-react";
 
 interface SidebarItem {
   name: string;
@@ -26,15 +27,15 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { name: "Dashboard", href: "/panel", icon: HomeIcon },
-  { name: "Cursos", href: "/panel/courses", icon: AcademicCapIcon },
+  { name: "Dashboard", href: "/panel", icon: Home },
+  { name: "Cursos", href: "/panel/courses", icon: GraduationCap },
   {
     name: "Usuarios",
     href: "/panel/users",
-    icon: UsersIcon,
+    icon: User,
     rol: "admin",
   },
-  { name: "Pagos", href: "/panel/payments", icon: CreditCardIcon },
+  { name: "Pagos", href: "/panel/payments", icon: CreditCard },
 ];
 
 interface AdminSidebarProps {
@@ -71,59 +72,69 @@ export default function Sidebar({ isCollapsed, onToggle }: AdminSidebarProps) {
 
     loadInitialData();
   }, [loadingUser]);
+
   const toggleMobileSidebar = () => {
     setIsMobileOpen(!isMobileOpen);
   };
 
   return (
     <div>
-      {/* Boton para el layout de un celular */}
+      {/* Botón para móvil con diseño mejorado */}
       <button
         onClick={toggleMobileSidebar}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-xl bg-white shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200"
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 rounded-2xl bg-gradient-to-br from-white to-gray-50 shadow-xl border border-gray-200/50 hover:shadow-2xl hover:scale-105 transition-all duration-300 backdrop-blur-sm"
       >
         {isMobileOpen ? (
-          <XMarkIcon className="h-6 w-6 text-gray-600" />
+          <X className="h-6 w-6 text-gray-700" />
         ) : (
-          <Bars3Icon className="h-6 w-6 text-gray-600" />
+          <Menu className="h-6 w-6 text-gray-700" />
         )}
       </button>
 
-      {/* Overlay móvil */}
+      {/* Overlay móvil con blur */}
       {isMobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-30 transition-all duration-300"
           onClick={toggleMobileSidebar}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar principal */}
       <aside
-        className={`fixed top-0 left-0 h-screen bg-white shadow-2xl border-r border-gray-100 transition-all duration-300 z-40 transform ${
+        className={`fixed top-0 left-0 h-screen bg-gradient-to-b from-white via-gray-50 to-white border-r border-gray-200/80 shadow-2xl transition-all duration-300 z-40 transform ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0 lg:static lg:block ${isCollapsed ? "w-20" : "w-64"}`}
+        } lg:translate-x-0 lg:static lg:block ${isCollapsed ? "w-20" : "w-72"}`}
       >
-        {/* Boton para hacer mas chico o mas grande */}
         <button
           onClick={onToggle}
-          className="hidden lg:block absolute top-4 right-4 z-10 p-2 rounded-xl bg-white shadow border border-gray-200 hover:bg-gray-50 transition-all duration-200"
+          className="hidden lg:flex absolute top-6 -right-4 z-10 items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300"
         >
           {isCollapsed ? (
-            <ChevronRightIcon className="h-5 w-5 text-gray-600" />
+            <ChevronRight className="h-4 w-4 text-white" />
           ) : (
-            <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+            <ChevronLeft className="h-4 w-4 text-white" />
           )}
         </button>
-        <div className="grid grid-rows-[auto_1fr_auto] h-full">
-          {!isCollapsed ? (
-            <div className="flex items-center justify-center h-20">
-              <h1 className="text-lg font-semibold text-gray-800">Panel</h1>
-            </div>
-          ) : (
-            ""
-          )}
-          {/* Navegación con grid y scroll */}
-          <nav className="px-3 py-6">
+
+        <div className="grid grid-rows-[auto_1fr_auto] h-full relative overflow-hidden">
+          <div className="relative">
+            {!isCollapsed ? (
+              <div className="relative flex items-center justify-center h-20 px-6">
+                <div className="flex items-center space-x-3">
+                  <div>
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                      Panel
+                    </h1>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="relative flex items-center justify-center h-20"></div>
+            )}
+          </div>
+
+          {/* Navegación */}
+          <nav className="px-4 py-6 space-y-2">
             {sidebarItems.map((item, index) => {
               const isActive = pathname === item.href;
               return (
@@ -131,59 +142,108 @@ export default function Sidebar({ isCollapsed, onToggle }: AdminSidebarProps) {
                   key={index}
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
-                  className={`grid grid-cols-[auto_1fr_auto] items-center my-2 px-3 py-3 text-sm font-medium rounded-2xl transition-all duration-200 relative ${
+                  className={`group relative flex items-center px-4 py-3.5 text-sm font-medium rounded-2xl transition-all duration-300 ${
                     item.rol && item.rol !== user?.rol ? "hidden" : ""
                   } ${
                     isActive
-                      ? "bg-[#599f96] text-white shadow-md transform scale-105"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-[#599f96] hover:shadow-md"
-                  } ${isCollapsed ? "justify-center grid-cols-1 mt-10" : ""}`}
+                      ? "bg-gradient-to-r from-teal-500/90 to-cyan-600/90 text-white scale-105"
+                      : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900 hover:scale-102"
+                  } ${isCollapsed ? "justify-center" : ""}`}
                   title={isCollapsed ? item.name : ""}
                 >
-                  <item.icon
-                    className={`h-5 w-5 transition-all duration-200 relative z-10 mx-auto ${
-                      isActive
-                        ? "text-white"
-                        : "text-gray-500 group-hover:text-[#599f96]"
-                    } ${isCollapsed ? "" : "mr-3"}`}
-                  />
+                  {/* Icono */}
+                  <div className={`relative z-10 ${isCollapsed ? "" : "mr-4"}`}>
+                    <item.icon
+                      className={`h-5 w-5 transition-all duration-300 ${
+                        isActive
+                          ? "text-white drop-shadow-sm"
+                          : "text-gray-500 group-hover:text-teal-600"
+                      }`}
+                    />
+                  </div>
+
+                  {/* Texto */}
                   {!isCollapsed && (
-                    <span className="relative z-10 truncate">{item.name}</span>
+                    <span className="relative z-10 truncate font-medium">
+                      {item.name}
+                    </span>
                   )}
+
+                  {/* Indicador de punto activo */}
                   {isActive && !isCollapsed && (
-                    <div className="ml-auto">
-                      <div className="w-2 h-2 bg-white rounded-full opacity-60" />
+                    <div className="ml-auto relative z-10">
+                      <div className="w-2 h-2 bg-white rounded-full shadow-sm animate-pulse" />
                     </div>
                   )}
+
+                  {/* Efecto hover */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-teal-500/0 to-cyan-500/0 group-hover:from-teal-500/5 group-hover:to-cyan-500/5 transition-all duration-300"></div>
                 </Link>
               );
             })}
+
+            {/* Separador */}
+            <div className="my-6 mx-4 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+
+            {/* Botón de salir */}
+            <Link
+              href={"/"}
+              onClick={() => setIsMobileOpen(false)}
+              className={`group relative flex items-center px-4 py-3.5 text-sm font-medium rounded-2xl transition-all duration-300 bg-gradient-to-r from-red-500/90 to-pink-600/90 hover:from-red-600 hover:to-pink-700 hover:scale-105 text-white ${
+                isCollapsed ? "justify-center" : ""
+              }`}
+              title="Salir del panel"
+            >
+              <div className={`relative z-10 ${isCollapsed ? "" : "mr-4"}`}>
+                <LogOut className="h-5 w-5 text-white" />
+              </div>
+
+              {!isCollapsed && (
+                <span className="relative z-10 truncate font-medium">
+                  Salir del panel
+                </span>
+              )}
+            </Link>
           </nav>
 
-          {/* Usuario */}
+          {/* Sección de usuario mejorada */}
           {!loading && (
-            <div className="border-t border-gray-100 p-4">
+            <div className="relative border-t border-gray-200/80 p-5">
+              {/* Decoración de fondo */}
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-50/80 to-transparent"></div>
+
               <div
-                className={`grid ${
-                  isCollapsed ? "justify-center" : "grid-cols-[auto_1fr] gap-3"
+                className={`relative z-10 ${
+                  isCollapsed
+                    ? "flex justify-center"
+                    : "flex items-center space-x-4"
                 }`}
               >
-                <div className="h-10 w-10 relative">
-                  <Image
-                    alt={user ? user.username : "Profile picture"}
-                    fill
-                    className="object-contain rounded-full"
-                    src={`/userImages/${user?.uuid}.jpeg`}
-                  />
+                {/* Avatar con indicador online */}
+                <div className="relative">
+                  <div className="h-12 w-12 relative overflow-hidden rounded-full shadow-lg">
+                    <Image
+                      alt={user ? user.username : "Profile picture"}
+                      fill
+                      className="object-cover"
+                      src={`/userImages/${user?.uuid}.jpeg`}
+                    />
+                  </div>
                 </div>
+
+                {/* Información del usuario */}
                 {!isCollapsed && (
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-800 truncate">
-                      {user && user.username}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {user && user.email}
-                    </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800 truncate">
+                          {user && user.username}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {user && user.email}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

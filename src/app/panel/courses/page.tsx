@@ -11,17 +11,19 @@ import {
 } from "@heroicons/react/24/outline";
 import { Course } from "@/types/api";
 import { useAuth } from "@/libs/context/AuthContext";
-import DashboardPageSkeleton from "@/components/skeletons/DashboardPageSkeleton";
 import { useRouter } from "next/navigation";
 import React from "react";
 import CourseModal from "@/components/modals/CourseModal";
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
 
 export default function PanelCoursesPage() {
   const [loading, setLoading] = useState(true);
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseModal, setCourseModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(7);
+  const [itemsPerPage] = useState(8);
+  const [confirmationModal, setConfirmationModal] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const { user, loadingUser } = useAuth();
   const router = useRouter();
 
@@ -34,33 +36,33 @@ export default function PanelCoursesPage() {
   const startItem = startIndex + 1;
   const endItem = Math.min(endIndex, totalItems);
 
+  const loadInitialData = async () => {
+    try {
+      const waitForAuth = () =>
+        new Promise<void>((resolve) => {
+          const interval = setInterval(() => {
+            if (!loadingUser) {
+              clearInterval(interval);
+              resolve();
+            }
+          }, 100);
+        });
+
+      await waitForAuth();
+
+      const resMyCourses = await fetch(
+        `/api/courses/getByUUID/${user?.uuid}/creator`
+      );
+      const myCoursesData: Course[] = await resMyCourses.json();
+      setCourses(myCoursesData);
+    } catch (err) {
+      console.error("Error al inciar los datos:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        const waitForAuth = () =>
-          new Promise<void>((resolve) => {
-            const interval = setInterval(() => {
-              if (!loadingUser) {
-                clearInterval(interval);
-                resolve();
-              }
-            }, 100);
-          });
-
-        await waitForAuth();
-
-        const resMyCourses = await fetch(
-          `/api/courses/getByUUID/${user?.uuid}/creator`
-        );
-        const myCoursesData: Course[] = await resMyCourses.json();
-        setCourses(myCoursesData);
-      } catch (err) {
-        console.error("Error al inciar los datos:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadInitialData();
   }, [loadingUser]);
 
@@ -109,9 +111,30 @@ export default function PanelCoursesPage() {
     return pages;
   };
 
-  if (loading) {
-    return <DashboardPageSkeleton />;
-  }
+  const handleDeleteCourse = async () => {
+    if (!selectedCourse) return;
+
+    try {
+      const res = await fetch(
+        `/api/courses/getByID/${selectedCourse.id}/delete`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (res.ok) {
+        setCourses((prevCourses) =>
+          prevCourses.filter((course) => course.id !== selectedCourse.id)
+        );
+        setConfirmationModal(false);
+        setSelectedCourse(null);
+      } else {
+        console.error("Error al eliminar el curso");
+      }
+    } catch (err) {
+      console.error("Error al eliminar el curso:", err);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -128,7 +151,7 @@ export default function PanelCoursesPage() {
         <div className="col-span-1">
           <button
             onClick={() => setCourseModal(true)}
-            className="cursor-pointer text-white flex gap-2 bg-[#599f96] hover:bg-[#77afa1] p-2 rounded-xl font-extrabold"
+            className="cursor-pointer text-white flex gap-2 bg-gradient-to-r from-teal-500/90 to-cyan-600/90 transition transform hover:scale-105 px-4 py-2 rounded-xl"
           >
             <FolderPlusIcon className="size-6" />
             Agregar curso
@@ -136,7 +159,19 @@ export default function PanelCoursesPage() {
         </div>
 
         <div className="col-span-full">
-          <div className="relative overflow-x-auto rounded-t-2xl shadow">
+          <div
+            className={`relative overflow-x-auto ${
+              totalPages > 1 ? "rounded-t-2xl" : "rounded-2xl"
+            } shadow`}
+          >
+            {loading && (
+              <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#599f96]"></div>
+                  <span className="text-sm text-gray-600">Cargando...</span>
+                </div>
+              </div>
+            )}
             <table className="w-full text-sm text-left rtl:text-right text-gray-500">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
                 <tr>
@@ -197,13 +232,17 @@ export default function PanelCoursesPage() {
                               `/panel/courses/edit?courseId=${course.id}`
                             )
                           }
-                          className="cursor-pointer bg-[#599f96] hover:bg-[#77afa1] text-white p-2 rounded-md transition-colors"
+                          className="cursor-pointer bg-gradient-to-r from-green-500/90 to-green-600/90 hover:from-green-600/90 hover:to-green-700/90 text-white p-2 rounded-md transition-colors duration-300"
                           title="Editar curso"
                         >
                           <PencilSquareIcon className="size-4" />
                         </button>
                         <button
-                          className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-md transition-colors"
+                          onClick={() => {
+                            setSelectedCourse(course);
+                            setConfirmationModal(true);
+                          }}
+                          className="cursor-pointer bg-gradient-to-r from-red-500/90 to-red-600/90 hover:from-red-600/90 hover:to-red-700/90 text-white p-2 rounded-md transition-colors duration-300"
                           title="Eliminar curso"
                         >
                           <TrashIcon className="size-4" />
@@ -272,7 +311,7 @@ export default function PanelCoursesPage() {
                             onClick={() => goToPage(page as number)}
                             className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 ${
                               currentPage === page
-                                ? "z-10 bg-[#599f96] hover:bg-[#77afa1] text-white focus-visible:outline-2 focus-visible:outline-offset-2"
+                                ? "z-10 bg-gradient-to-r from-teal-500/60 to-cyan-600/60 text-white focus-visible:outline-2 focus-visible:outline-offset-2"
                                 : "text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
                             }`}
                           >
@@ -298,10 +337,18 @@ export default function PanelCoursesPage() {
           )}
         </div>
       </div>
-      {courseModal && user && (
-        <CourseModal
-          closeModal={() => setCourseModal(false)}
-          uuid={user.uuid}
+      <CourseModal
+        closeModal={() => setCourseModal(false)}
+        uuid={user ? user.uuid : ""}
+        visible={courseModal}
+        refreshTable={() => loadInitialData()}
+      />
+      {confirmationModal && selectedCourse && (
+        <ConfirmationModal
+          visible={confirmationModal}
+          onClose={() => setConfirmationModal(false)}
+          onConfirm={handleDeleteCourse}
+          name={selectedCourse.name}
         />
       )}
     </div>
