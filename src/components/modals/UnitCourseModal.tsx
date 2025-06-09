@@ -51,6 +51,8 @@ export default function UnitCourseModal({
       const data = await res.json();
       if (res.status === 200) {
         showAlert(data.message, "success", "Actualizado", 2000);
+        refreshData();
+        closeModal();
       } else {
         showAlert(data.message, "error", "Error", 2000);
       }

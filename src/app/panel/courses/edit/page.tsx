@@ -1,45 +1,47 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import {
-  PlusCircleIcon,
-  MinusCircleIcon,
+  ArrowLeft,
+  Plus,
+  Edit,
+  Trash2,
+  Play,
+  FileText,
+  DollarSign,
+  Image,
+  ChevronDown,
+  ChevronRight,
+  PlusIcon,
   PencilIcon,
-  PencilSquareIcon,
-  FolderPlusIcon,
-  ArrowLeftIcon,
-} from "@heroicons/react/24/outline";
+  TrashIcon,
+  PlayIcon,
+} from "lucide-react";
+import { Content, CourseWithUnitContent, UnitCourse } from "@/types/api";
 import { useAuth } from "@/libs/context/AuthContext";
-import DashboardPageSkeleton from "@/components/skeletons/DashboardPageSkeleton";
+import { useSearchParams } from "next/navigation";
+import { useAlert } from "@/libs/context/AlertContext";
 import UnitCourseModal from "@/components/modals/UnitCourseModal";
 import ContentCourseModal from "@/components/modals/ContentCourseModal";
-import {
-  Content,
-  CourseWithUnitContent,
-  UnitCourse,
-  UnitWithContent,
-} from "@/types/api";
-import { useAlert } from "@/libs/context/AlertContext";
+import ConfirmationModal from "@/components/modals/ConfirmationModal";
 
-export default function PanelCoursesPage() {
+export default function CourseEditor() {
   const [loading, setLoading] = useState(true);
   const [image, setImage] = useState("");
   const [imageFile, setImageFile] = useState<File>();
   const [price, setPrice] = useState<string>("0.00");
   const [unitCourseModal, setUnitCourseModal] = useState(false);
   const [contentCourseModal, setContentCourseModal] = useState(false);
-  const [data, setData] = useState<CourseWithUnitContent[]>();
-  const [unitId, setUnitId] = useState<number>();
-
-  const [selectedUnitIndex, SetSelectedUnitIndex] = useState<number>();
-
+  const [confirmationModal, setConfirmationModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<
+    (UnitCourse & { type: "unit" }) | (Content & { type: "content" })
+  >();
+  const [data, setData] = useState<CourseWithUnitContent>();
+  const [selectedUnitIndex, setSelectedUnitIndex] = useState<number>();
   const [editMode, setEditMode] = useState<"create" | "edit" | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<UnitCourse | null>(null);
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
-
-  const router = useRouter();
+  const [unitId, setUnitId] = useState<number>();
   const { user, loadingUser } = useAuth();
   const { showAlert } = useAlert();
   const searchParams = useSearchParams();
@@ -50,7 +52,7 @@ export default function PanelCoursesPage() {
       const res = await fetch(`/api/courses/getByID/${courseId}/contents`);
       const data: CourseWithUnitContent[] = await res.json();
 
-      setData(data);
+      setData(data[0]);
 
       if (data) {
         setPrice(String(data[0].price));
@@ -87,7 +89,7 @@ export default function PanelCoursesPage() {
 
     if (courseId && data) {
       formData.append("id", courseId);
-      formData.append("price", price !== String(data[0].price) ? price : "");
+      formData.append("price", price !== String(data.price) ? price : "");
     }
 
     if (imageFile) {
@@ -108,263 +110,333 @@ export default function PanelCoursesPage() {
     }
   };
 
-  const handleUnitClick = (index: number) => {
-    SetSelectedUnitIndex((prevIndex) =>
-      prevIndex === index ? undefined : index
-    );
+  const handleDeleteItem = async () => {
+    if (itemToDelete?.type === "unit") {
+      const res: Response = await fetch(
+        `/api/units_courses/byID/${itemToDelete.id}/`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const resData = await res.json();
+
+      if (res.status === 200) {
+        showAlert(resData.message, "success", "Actualizado", 5000);
+        setConfirmationModal(false);
+        setItemToDelete(undefined);
+        loadInitialData();
+      } else {
+        showAlert(resData.message, "error", "Error", 5000);
+      }
+    } else if (itemToDelete?.type === "content") {
+      const res: Response = await fetch(
+        `/api/contents/byID/${itemToDelete.id}/`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const resData = await res.json();
+
+      if (res.status === 200) {
+        showAlert(resData.message, "success", "Actualizado", 5000);
+        setConfirmationModal(false);
+        setItemToDelete(undefined);
+        loadInitialData();
+      } else {
+        showAlert(resData.message, "error", "Error", 5000);
+      }
+    }
   };
 
-  if (loading) {
-    return <DashboardPageSkeleton />;
-  }
+  const handleUnitToggle = (index: any) => {
+    setSelectedUnitIndex(selectedUnitIndex === index ? null : index);
+  };
 
-  if (data && data[0].instructor_ID !== user?.uuid) {
-    return <div>No autorizo que estes aqui bro</div>;
+  if (!data || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-500">Cargando curso...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen px-6 py-10">
-      {data && (
-        <div className="max-w-6xl mx-auto">
-          <button
-            onClick={() => router.push("/panel/courses")}
-            className="cursor-pointer bg-red-400 p-2 rounded-xl shadow font-extrabold inline-flex gap-2 mb-4"
-          >
-            <ArrowLeftIcon className="size-6" />
-            Salir
-          </button>
-          <form
-            onSubmit={handleSaveCourse}
-            className="grid grid-cols-1 md:grid-cols-3 grid-rows-3 gap-4 mb-6"
-          >
-            <div className="bg-white shadow rounded-2xl p-4 col-span-1 row-span-2 relative overflow-hidden group">
-              <Image
-                alt="Imagen del curso"
-                src={image}
-                fill
-                className="object-cover p-3 rounded-3xl"
-              />
-              <div className="absolute inset-0 bg-white/30 opacity-0 group-hover:opacity-100 transition duration-300 rounded-3xl flex items-center justify-center">
-                <label className="cursor-pointer bg-white p-2 rounded-full border-4">
-                  <PencilIcon className="size-8 text-gray-700" />
-                  <input
-                    type="file"
-                    accept=".jpg,.jpeg,.png"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const imageURL = URL.createObjectURL(file);
-                        setImage(imageURL);
-                        setImageFile(file || null);
-                      }
-                    }}
-                  />
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <form
+          onSubmit={handleSaveCourse}
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-8"
+        >
+          <div className="p-6 border-b flex justify-between items-center border-gray-100">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-600" />
+              Información del Curso
+            </h2>
+            <button className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+              Guardar Cambios
+            </button>
+          </div>
+
+          <div className="p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Imagen del curso
                 </label>
-              </div>
-            </div>
-            <div className="bg-white shadow rounded-2xl p-4 col-span-2 row-span-1">
-              <p className="text-sm text-gray-600 mb-1 font-extrabold">
-                Titulo:
-              </p>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                placeholder={data[0].name}
-                className="text-gray-700 bg-gray-100 p-2 rounded-xl w-full"
-              />
-            </div>
-            <div className="bg-white shadow rounded-2xl p-4 col-span-2 row-span-2">
-              <p className="text-sm text-gray-600 mb-1 font-extrabold">
-                Descripcion:
-              </p>
-              <textarea
-                name="description"
-                maxLength={684}
-                placeholder={data[0].description}
-                className="text-gray-700 bg-gray-100 p-2 rounded-xl w-full h-[85%] resize-none"
-              />
-            </div>
-            <div className="bg-white shadow rounded-2xl p-4 col-span-1">
-              <div className="grid grid-cols-4 justify-items-center">
-                <p className="text-sm text-gray-600 mb-1 font-extrabold col-span-4">
-                  Precio:
-                </p>
-                <div className="col-span-1 row-span-2">
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const current = parseFloat(price) || 0;
-                      const newPrice = Math.max(current - 1, 0).toFixed(2);
-                      setPrice(newPrice);
-                    }}
-                    className="cursor-pointer"
-                  >
-                    <MinusCircleIcon className="size-6" />
-                  </button>
+                <div className="relative group">
+                  <div className="aspect-video bg-gray-100 rounded-xl overflow-hidden">
+                    <img
+                      src={image}
+                      alt="Course preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
+                    <label className="cursor-pointer bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white transition-colors">
+                      <Image className="w-5 h-5 text-gray-700" />
+                      <span className="text-sm font-medium text-gray-700">
+                        Cambiar imagen
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const imageURL = URL.createObjectURL(file);
+                            setImage(imageURL);
+                            setImageFile(file || null);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
                 </div>
-                <div className="col-span-2 row-span-2 text-xl text-center">
-                  MXN$
+              </div>
+
+              <div className="lg:col-span-2 space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Título del curso
+                  </label>
                   <input
-                    inputMode="decimal"
-                    step="0.01"
-                    value={price}
-                    onChange={(e) => {
-                      const raw = e.target.value;
-                      if (/^\d*\.?\d{0,2}$/.test(raw)) {
-                        setPrice(raw);
-                      }
-                    }}
-                    className="w-[40%]"
+                    type="text"
+                    defaultValue={data.name}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    placeholder="Ingrese el título del curso"
                   />
                 </div>
-                <div className="col-span-1 row-span-2">
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      const current = parseFloat(price) || 0;
-                      const newPrice = (current + 1).toFixed(2);
-                      setPrice(newPrice);
-                    }}
-                    className="cursor-pointer"
-                  >
-                    <PlusCircleIcon className="size-6" />
-                  </button>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Descripción
+                  </label>
+                  <textarea
+                    rows={4}
+                    defaultValue={data.description}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none"
+                    placeholder="Describe tu curso..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Precio (MXN)
+                  </label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                      placeholder="0.00"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="col-span-3 flex justify-center">
+          </div>
+        </form>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Play className="w-5 h-5 text-blue-600" />
+                Contenido del Curso
+              </h2>
               <button
-                type="submit"
-                className="cursor-pointer font-extrabold inline-flex gap-2 bg-green-400 hover:bg-green-500 hover:transition hover:duration-300 p-2 rounded-md shadow"
+                onClick={() => {
+                  setEditMode("create");
+                  setUnitCourseModal(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
               >
-                <FolderPlusIcon className="size-6" />
-                Guardar
+                <Plus className="w-4 h-4" />
+                <span className="font-medium">Nueva Unidad</span>
               </button>
             </div>
-          </form>
+          </div>
 
-          {/* Contenidos */}
-          <div className="grid grid-cols-1 md:grid-cols-3 grid-rows-3 gap-4 mb-6">
-            <div className="col-span-3 bg-white shadow rounded-2xl p-2">
-              <div className="inline-flex w-full justify-between p-4">
-                <h1 className="font-extrabold text-xl">Contenido</h1>
-                <button
-                  onClick={() => {
-                    setEditMode("create");
-                    setSelectedUnit(null);
-                    setUnitCourseModal(true);
-                  }}
-                  className="cursor-pointer bg-green-400 p-2 rounded-md inline-flex gap-2"
+          <div className="divide-y divide-gray-100">
+            {data.units.map((unit, index) => (
+              <div key={unit.id} className="bg-white">
+                <div
+                  className="px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => handleUnitToggle(index)}
                 >
-                  <FolderPlusIcon className="size-5" />
-                  <p className="text-sm font-extrabold">Agregar Unidad</p>
-                </button>
-              </div>
-
-              {/* Unidades */}
-              {data[0].units.map((unit: UnitWithContent, index) => (
-                <div key={index}>
-                  <div
-                    className={`bg-gray-100 p-4 inline-flex w-full ${
-                      index === 0 ? "rounded-t-2xl" : ""
-                    } ${
-                      index === data[0].units.length - 1 ? "rounded-b-2xl" : ""
-                    } justify-between`}
-                  >
-                    <button
-                      onClick={() => handleUnitClick(index)}
-                      className="hover:text-blue-500 cursor-pointer"
-                    >
-                      <p className="font-extrabold">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      {selectedUnitIndex === index ? (
+                        <ChevronDown className="w-5 h-5 text-gray-400" />
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
                         Unidad {unit.unit_number}: {unit.title}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {unit.contents.length} video
+                        {unit.contents.length !== 1 ? "s" : ""}
                       </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      onClick={() => {
+                        setEditMode("create");
+                        setUnitId(unit.id);
+                        setContentCourseModal(true);
+                      }}
+                    >
+                      <Plus className="w-4 h-4" />
                     </button>
-                    <div className="inline-flex gap-2">
+                    <button
+                      className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                      onClick={() => {
+                        setEditMode("edit");
+                        setSelectedUnit(unit);
+                        setUnitCourseModal(true);
+                      }}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      onClick={() => {
+                        setItemToDelete({ ...unit, type: "unit" });
+                        setConfirmationModal(true);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    selectedUnitIndex === index
+                      ? "max-h-96 opacity-100"
+                      : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div className="px-6 pb-4">
+                    <div className="ml-9 space-y-2">
+                      {unit.contents.map((content, contentIndex) => (
+                        <div
+                          key={content.id}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <PlayIcon className="w-4 h-4 text-gray-400" />
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {content.title}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => {
+                                setEditMode("edit");
+                                setSelectedContent(content);
+                                setContentCourseModal(true);
+                              }}
+                              className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded transition-colors"
+                            >
+                              <PencilIcon className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setItemToDelete({
+                                  ...content,
+                                  type: "content",
+                                });
+                                setConfirmationModal(true);
+                              }}
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            >
+                              <TrashIcon className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
                       <button
                         onClick={() => {
                           setEditMode("create");
-                          setUnitId(unit.id);
-                          setSelectedContent(null);
                           setContentCourseModal(true);
                         }}
-                        className="cursor-pointer bg-green-400 p-1 rounded-md inline-flex gap-2"
+                        className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-300 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
                       >
-                        <FolderPlusIcon className="size-5" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEditMode("edit");
-                          setSelectedUnit(unit);
-                          setUnitCourseModal(true);
-                        }}
-                        className="cursor-pointer bg-green-400 p-1 rounded-md inline-flex gap-2"
-                      >
-                        <PencilSquareIcon className="size-5" />
+                        <PlusIcon className="w-4 h-4" />
+                        <span className="text-sm font-medium">
+                          Agregar contenido
+                        </span>
                       </button>
                     </div>
                   </div>
-                  <div
-                    className={`transition-all duration-300 overflow-hidden ${
-                      selectedUnitIndex === index
-                        ? "max-h-[500px] opacity-100 translate-y-0"
-                        : "max-h-0 opacity-0 -translate-y-4"
-                    }`}
-                  >
-                    {unit.contents.map((content: Content, contentIndex) => (
-                      <div
-                        key={contentIndex}
-                        className="bg-white p-4 inline-flex w-full justify-between"
-                      >
-                        <p>
-                          Video {contentIndex + 1}: {content.title}
-                        </p>
-                        <button
-                          onClick={() => {
-                            setEditMode("edit");
-                            setSelectedContent(content);
-                            setContentCourseModal(true);
-                          }}
-                          className="cursor-pointer bg-green-400 p-1 rounded-md inline-flex gap-2"
-                        >
-                          <PencilSquareIcon className="size-5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
       <UnitCourseModal
-        uuid={user ? user.uuid : ""}
-        courseId={data ? data[0].id : undefined}
+        closeModal={() => setUnitCourseModal(false)}
         mode={editMode}
-        unit={selectedUnit}
-        visible={unitCourseModal}
         refreshData={loadInitialData}
-        closeModal={() => {
-          setUnitCourseModal(false);
-          setEditMode(null);
-          setSelectedUnit(null);
-        }}
+        unit={selectedUnit}
+        uuid={user ? user.uuid : ""}
+        courseId={Number(courseId)}
+        visible={unitCourseModal}
       />
-      {contentCourseModal && (
-        <ContentCourseModal
-          uuid={user ? user?.uuid : ""}
-          unitId={unitId}
-          mode={editMode}
-          content={selectedContent}
-          closeModal={() => {
-            setContentCourseModal(false);
-            setEditMode(null);
-            setSelectedContent(null);
-          }}
-        />
-      )}
+      <ContentCourseModal
+        closeModal={() => setContentCourseModal(false)}
+        mode={editMode}
+        refreshData={loadInitialData}
+        content={selectedContent}
+        uuid={user ? user.uuid : ""}
+        unitId={unitId}
+        visible={contentCourseModal}
+      />
+      <ConfirmationModal
+        name={itemToDelete ? itemToDelete.title : ""}
+        onClose={() => setConfirmationModal(false)}
+        onConfirm={handleDeleteItem}
+        visible={confirmationModal}
+      />
     </div>
   );
 }

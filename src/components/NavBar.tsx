@@ -12,7 +12,6 @@ import {
   LanguageIcon,
   Bars3Icon,
   XMarkIcon,
-  MagnifyingGlassIcon,
   ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon, EyeIcon } from "@heroicons/react/20/solid";
@@ -259,6 +258,18 @@ export default function NavBar() {
               className="text-sm/6 font-semibold text-gray-900"
             >
               Certificados
+            </a>
+            <a
+              href="/dashboard/apply"
+              className="text-sm/6 font-semibold text-gray-900"
+            >
+              Aplica a instructor
+            </a>
+            <a
+              href="/home/certificates"
+              className="text-sm/6 font-semibold text-gray-900"
+            >
+              Sobre nosotros
             </a>
           </div>
           {loading ? (

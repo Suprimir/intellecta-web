@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
         : undefined,
     };
 
+    console.log(content);
     // Verificar que esten todos los campos
     const hasEmptyFields = Object.values(content).some(
       (value) => value === undefined

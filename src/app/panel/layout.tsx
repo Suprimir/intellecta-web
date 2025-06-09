@@ -2,7 +2,6 @@
 
 import { Inter } from "next/font/google";
 import Sidebar from "@/components/Sidebar";
-import Footer from "@/components/Footer";
 import { useState } from "react";
 import "../globals.css";
 
@@ -27,18 +26,16 @@ export default function PanelLayout({ children }: PanelLayoutProps) {
         gridTemplateRows: "1fr auto",
       }}
     >
-      <div className="relative lg:col-span-1">
+      <div className="fixed z-50">
         <Sidebar isCollapsed={isSidebarCollapsed} onToggle={toggleSidebar} />
       </div>
+
+      <div className="lg:col-span-1"></div>
 
       <div className="relative col-span-2 lg:col-span-1 py-8">
         <main className="h-full flex justify-center p-6">
           <div className="w-full max-w-7xl mx-auto">{children}</div>
         </main>
-      </div>
-
-      <div className="col-span-2">
-        <Footer />
       </div>
     </div>
   );

@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import UserModal from "@/components/modals/UserModal";
 import ConfirmationModal from "@/components/modals/ConfirmationModal";
+import Table from "@/components/Table";
 
 export default function PanelCoursesPage() {
   const [loading, setLoading] = useState(true);
@@ -159,195 +160,27 @@ export default function PanelCoursesPage() {
         </div>
 
         <div className="col-span-full">
-          <div
-            className={`relative overflow-x-auto ${
-              totalPages > 1 ? "rounded-t-2xl" : "rounded-2xl"
-            } shadow`}
-          >
-            {loading && (
-              <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#599f96]"></div>
-                  <span className="text-sm text-gray-600">Cargando...</span>
-                </div>
-              </div>
-            )}
-            <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th scope="col" className="px-6 py-4 font-semibold">
-                    Nombre
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-4 font-semibold hidden xl:table-cell"
-                  >
-                    Apellido
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-4 font-semibold hidden md:table-cell"
-                  >
-                    Email
-                  </th>
-                  <th scope="col" className="px-6 py-4 font-semibold">
-                    Role
-                  </th>
-                  <th scope="col" className="px-6 py-4 font-semibold">
-                    Verificado
-                  </th>
-                  <th scope="col" className="px-6 py-4 font-semibold">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 ">
-                {currentUsers.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-6 py-8 text-center bg-gray-50 text-gray-500"
-                    >
-                      {loading
-                        ? "Cargando datos..."
-                        : "No hay datos disponibles"}
-                    </td>
-                  </tr>
-                ) : (
-                  currentUsers.map((user: User, index) => (
-                    <tr
-                      key={index}
-                      className="bg-white hover:bg-gray-50 transition-colors duration-200"
-                    >
-                      <td className="px-6 py-4 font-medium text-gray-900">
-                        {user.name}
-                      </td>
-                      <td className="px-6 py-4 max-w-xs hidden xl:table-cell truncate">
-                        {user.last_name}
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-green-600 hidden md:table-cell">
-                        {user.email}
-                      </td>
-                      <td className="px-6 py-4">{user.role}</td>
-                      <td className="px-6 py-4">
-                        {user.verified ? (
-                          <CheckBadgeIcon className="size-6 text-blue-400" />
-                        ) : (
-                          <XCircleIcon className="size-6 text-red-400" />
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              setEditMode("edit");
-                              setSelectedUser(user);
-                              setUserModal(true);
-                            }}
-                            className="cursor-pointer bg-[#599f96] hover:bg-[#77afa1] text-white p-2 rounded-md transition-colors"
-                            title="Editar curso"
-                          >
-                            <PencilSquareIcon className="size-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setConfirmationModal(true);
-                            }}
-                            className="cursor-pointer bg-red-500 hover:bg-red-600 text-white p-2 rounded-md transition-colors"
-                            title="Eliminar curso"
-                          >
-                            <TrashIcon className="size-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Paginación */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t shadow border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-b-2xl">
-              <div className="flex flex-1 justify-between sm:hidden">
-                <button
-                  onClick={goToPreviousPage}
-                  disabled={currentPage === 1}
-                  className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={goToNextPage}
-                  disabled={currentPage === totalPages}
-                  className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
-
-              {/* Navegación desktop */}
-              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Mostrando <span className="font-medium">{startItem}</span> a{" "}
-                    <span className="font-medium">{endItem}</span> de{" "}
-                    <span className="font-medium">{totalItems}</span> resultados
-                  </p>
-                </div>
-                <div>
-                  <nav
-                    className="isolate inline-flex -space-x-px rounded-md shadow-xs"
-                    aria-label="Pagination"
-                  >
-                    {/* Botón Previous */}
-                    <button
-                      onClick={goToPreviousPage}
-                      disabled={currentPage === 1}
-                      className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <span className="sr-only">Previous</span>
-                      <ChevronLeftIcon className="size-5" />
-                    </button>
-
-                    {/* Números de página */}
-                    {getPageNumbers().map((page, index) => (
-                      <React.Fragment key={index}>
-                        {page === "..." ? (
-                          <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-gray-300 ring-inset focus:outline-offset-0">
-                            ...
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => goToPage(page as number)}
-                            className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 ${
-                              currentPage === page
-                                ? "z-10 bg-[#599f96] hover:bg-[#77afa1] text-white focus-visible:outline-2 focus-visible:outline-offset-2"
-                                : "text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        )}
-                      </React.Fragment>
-                    ))}
-
-                    {/* Botón Next */}
-                    <button
-                      onClick={goToNextPage}
-                      disabled={currentPage === totalPages}
-                      className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <span className="sr-only">Next</span>
-                      <ChevronRightIcon className="size-5" />
-                    </button>
-                  </nav>
-                </div>
-              </div>
-            </div>
-          )}
+          <Table
+            items={users}
+            editable
+            excludedKeys={[
+              "uuid",
+              "password",
+              "profilePicture",
+              "bio",
+              "last_login",
+              "active",
+            ]}
+            onEdit={(user: User) => {
+              setSelectedUser(user);
+              setEditMode("edit");
+              setUserModal(true);
+            }}
+            onDelete={(user: User) => {
+              setSelectedUser(user);
+              setConfirmationModal(true);
+            }}
+          />
         </div>
       </div>
       <UserModal

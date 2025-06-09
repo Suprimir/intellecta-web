@@ -34,8 +34,8 @@ CREATE TABLE resetPassTokens (
 CREATE TABLE categories (
  id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
  description VARCHAR(25)
+active BOOLEAN NOT NULL DEFAULT 1,
 );
-
 
 CREATE TABLE courses (
  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
@@ -48,6 +48,7 @@ CREATE TABLE courses (
  rating TINYINT NOT NULL CHECK (rating BETWEEN 0 AND 10) DEFAULT 0,
  instructor_ID VARCHAR(100) NOT NULL,
  category_ID INT NOT NULL,
+ active BOOLEAN NOT NULL DEFAULT 1,
  foreign key (instructor_ID) references users (uuid) on delete cascade,
  foreign key (category_ID) references categories (id) on delete cascade
 );
@@ -65,23 +66,6 @@ CREATE TABLE shoppingCarts_details (
     FOREIGN KEY (shoppingCart_ID) REFERENCES shoppingCarts (id) ON DELETE CASCADE,
     FOREIGN KEY (course_ID) REFERENCES courses (id) ON DELETE CASCADE
 );
-
-CREATE TABLE orders (
-    id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    uuid VARCHAR(100) NOT NULL,
-    status ENUM("completed", "failed") NOT NULL DEFAULT "failed",
-    created_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (uuid) REFERENCES users (uuid) ON DELETE CASCADE
-);
-
-CREATE TABLE orders_details (
-    id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    order_ID INT NOT NULL,
-    course_ID INT NOT NULL,
-    FOREIGN KEY (order_ID) REFERENCES orders (id) ON DELETE CASCADE,
-    FOREIGN KEY (course_ID) REFERENCES courses (id) ON DELETE CASCADE
-);
-
 
 CREATE TABLE purchased_courses (
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
@@ -132,48 +116,78 @@ CREATE TABLE certificates (
     id INT NOT NULL AUTO_INCREMENT,
     user_ID VARCHAR(100) NOT NULL,
     course_ID INT NOT NULL,
+    pdf_Path TEXT NOT NULL,
+    issue_Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_ID) REFERENCES users (uuid) ON DELETE CASCADE,
     FOREIGN KEY (course_ID) REFERENCES courses (id) ON DELETE CASCADE
-);
-
-CREATE TABLE messages ( 
- id INT PRIMARY KEY NOT NULL AUTO_INCREMENT, 
- receiver_User_ID VARCHAR(100) NOT NULL, 
- sender_User_ID VARCHAR(100) NOT NULL, 
- timestamp DATETIME NOT NULL,
- message_Content TEXT,
- foreign key (receiver_User_ID) references users (uuid) on delete cascade,
- foreign key (sender_User_ID) references users (uuid) on delete cascade
 );
  
 CREATE TABLE support_Tickets (
  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
  user_R_ID VARCHAR(100) NOT NULL,
- problem_Category ENUM ('technical', 'functional', 'bug', 'other category'), 
- proof_Files TEXT,
+ problem_Category ENUM ('technical', 'functional', 'bug', 'other category'),
+    problem_Description TEXT NOT NULL,
  status ENUM ('open', 'closed', 'in process', 'unknown'),
  resolution TEXT,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  foreign key (user_R_ID) references users (uuid) on delete cascade
 );
 
-
-SELECT  
-    c.id, 
-    c.name, 
-    c.description, 
-    c.image, c.date, 
-    c.duration, 
-    c.instructor_ID, 
-    CONCAT_WS(" ", u.name, u.last_name) as instructor, 
-    c.category_ID, 
-    cat.description as category, 
-    c.price, 
-    c.rating 
-FROM courses c 
-JOIN users u ON c.instructor_ID = u.uuid
-JOIN categories cat ON c.category_ID = cat.id
-WHERE c.id = 1;
+CREATE TABLE ratings (
+    id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    user_ID VARCHAR(100) NOT NULL,
+    course_ID INT NOT NULL,
+    rating TINYINT NOT NULL CHECK (rating BETWEEN 0 AND 5),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_ID) REFERENCES users(uuid) ON DELETE CASCADE,
+    FOREIGN KEY (course_ID) REFERENCES courses(id) ON DELETE CASCADE,
+    UNIQUE (user_ID, course_ID)
+);
 
 
+CREATE TABLE instructor_applications (
+    id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    user_ID VARCHAR(100) NOT NULL,
+    status ENUM('pending', 'accepted', 'rejected') NOT NULL DEFAULT 'pending',
+    professional_Experience TEXT,
+    qualifications TEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_ID) REFERENCES users(uuid) ON DELETE CASCADE
+);
+
+
+DELIMITER //
+CREATE TRIGGER update_course_rating_on_insert
+AFTER INSERT ON ratings
+FOR EACH ROW
+BEGIN
+    DECLARE avg_rating DECIMAL(3, 2);
+    
+    SELECT AVG(rating) INTO avg_rating
+    FROM ratings
+    WHERE course_ID = NEW.course_ID;
+
+    UPDATE courses
+    SET rating = avg_rating
+    WHERE id = NEW.course_ID;
+END; //
+
+CREATE TRIGGER update_course_rating_on_update
+AFTER UPDATE ON ratings
+FOR EACH ROW
+BEGIN
+    DECLARE avg_rating DECIMAL(3, 2);
+    
+    SELECT AVG(rating) INTO avg_rating
+    FROM ratings
+    WHERE course_ID = NEW.course_ID;
+
+    UPDATE courses
+    SET rating = avg_rating
+    WHERE id = NEW.course_ID;
+END; //
+DELIMITER ;
+
+SELECT * FROM users;
 SELECT * FROM categories;
 DROP DATABASE intellecta_database;

@@ -5,7 +5,7 @@ interface ConfirmationModalProps {
   visible: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  name: string;
+  name: string | undefined;
 }
 
 export default function ConfirmationModal({

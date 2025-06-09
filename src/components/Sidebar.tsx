@@ -17,6 +17,8 @@ import {
   X,
   Settings,
   Bell,
+  FileUser,
+  Ticket,
 } from "lucide-react";
 
 interface SidebarItem {
@@ -36,6 +38,13 @@ const sidebarItems: SidebarItem[] = [
     rol: "admin",
   },
   { name: "Pagos", href: "/panel/payments", icon: CreditCard },
+  {
+    name: "Aplicaciones",
+    href: "/panel/applications",
+    icon: FileUser,
+    rol: "admin",
+  },
+  { name: "Tickets", href: "/panel/tickets", icon: Ticket, rol: "admin" },
 ];
 
 interface AdminSidebarProps {
@@ -226,7 +235,7 @@ export default function Sidebar({ isCollapsed, onToggle }: AdminSidebarProps) {
                       alt={user ? user.username : "Profile picture"}
                       fill
                       className="object-cover"
-                      src={`/userImages/${user?.uuid}.jpeg`}
+                      src={user?.profilePicture || "/userImages/default.webp"}
                     />
                   </div>
                 </div>

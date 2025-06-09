@@ -40,6 +40,7 @@ export type Course = {
   date: Date;
   duration: number;
   rating: number;
+  userRating: number;
   instructor_ID: string;
   instructor: string;
   category_ID: number;
@@ -142,8 +143,11 @@ export interface ContentCompleted {
 export interface Certificate {
   id: number;
   user_ID: string;
+  username: string;
   course_ID: number;
   name: string;
+  pdf_Path: string;
+  issue_Date: Date;
 }
 
 export interface TotalContents {
@@ -153,4 +157,34 @@ export interface TotalContents {
   name: string;
   completedContents: number;
   totalContents: number;
+}
+
+export interface CertificateData {
+  id: number;
+  studentName: string;
+  courseName: number;
+  categoryName: string;
+  duration: number;
+  instructorName: string;
+}
+
+export interface InstructorApplications {
+  id: number;
+  user_ID: string;
+  full_Name: string;
+  status: "pending" | "accepted" | "rejected";
+  professional_Experience: string;
+  qualifications: string;
+  created_at: Date;
+}
+
+export interface Ticket {
+  id: number;
+  user_R_ID: string;
+  username: string;
+  problem_Category: "technical" | "functional" | "bug" | "other category";
+  problem_Description: string;
+  status: "open" | "closed" | "in process" | "unknown";
+  resolution: string | null;
+  created_at: Date;
 }

@@ -15,6 +15,8 @@ interface ContentCourseModalProps {
   unitId?: number;
   mode: string | null;
   content: Content | null;
+  visible?: boolean;
+  refreshData: () => void;
   closeModal: () => void;
 }
 
@@ -23,8 +25,11 @@ export default function ContentCourseModal({
   unitId,
   mode,
   content,
+  visible,
+  refreshData,
   closeModal,
 }: ContentCourseModalProps) {
+  const [isVisible, setIsVisible] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<string | undefined>(undefined);
   const [selectedVideo, setSelectedVideo] = useState<string | undefined>(
     undefined
@@ -38,6 +43,14 @@ export default function ContentCourseModal({
       setSelectedVideo(content?.media_Path);
     }
   }, []);
+
+  useEffect(() => {
+    if (visible) {
+      setIsVisible(true);
+    } else {
+      setTimeout(() => setIsVisible(false), 200);
+    }
+  }, [visible]);
 
   const handlePreview = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -62,6 +75,8 @@ export default function ContentCourseModal({
       const data = await res.json();
       if (res.status === 200) {
         showAlert(data.message, "success", "Actualizado", 2000);
+        refreshData();
+        closeModal();
       } else {
         showAlert(data.message, "error", "Error", 2000);
       }
@@ -76,6 +91,8 @@ export default function ContentCourseModal({
       const data = await res.json();
       if (res.status === 200) {
         showAlert(data.message, "success", "Actualizado", 2000);
+        refreshData();
+        closeModal();
       } else {
         showAlert(data.message, "error", "Error", 2000);
       }
@@ -83,65 +100,74 @@ export default function ContentCourseModal({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+    <div
+      className={`fixed inset-0 flex items-center justify-center bg-black/50 transition-opacity duration-200 ${
+        visible && isVisible ? "opacity-100" : "opacity-0"
+      } ${isVisible || visible ? "block" : "hidden"}`}
+    >
       <form
         onSubmit={handleSaveUnit}
-        className="bg-white w-full max-w-xl h-auto max-h-fit rounded-2xl p-6 flex flex-col overflow-auto"
+        className="bg-white w-full max-w-xl h-auto rounded-2xl flex flex-col overflow-auto"
       >
-        {/* Encabezado */}
-        <div className="flex justify-between items-center">
-          <h1 className="font-extrabold text-lg">
-            {mode === "edit" ? "Editar contenido" : "Nuevo contenido"}
-          </h1>
-          <XMarkIcon
-            onClick={closeModal}
-            className="size-6 bg-red-400 rounded-md cursor-pointer"
-          />
+        <div className="border-b shadow-md">
+          <div className="flex justify-between items-center p-4">
+            <div className="flex items-center gap-2">
+              <div className="cursor-pointer hover:bg-gray-100 rounded-full transition-colors duration-300 p-1">
+                <XMarkIcon onClick={closeModal} className="size-8" />
+              </div>
+              <h1 className="font-extrabold text-lg">
+                {mode === "create" ? "Crear Contenido" : "Editar Contenido"}
+              </h1>
+            </div>
+            <button
+              type="submit"
+              className="flex text-white items-center gap-2 p-2 rounded-lg cursor-pointer bg-gradient-to-br from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 transition-colors duration-300 shadow-md"
+            >
+              <ArrowDownTrayIcon className="size-6" />
+              <span className="font-extrabold">Guardar</span>
+            </button>
+          </div>
         </div>
 
-        {/* Contenido del formulario */}
-        <div className="my-6 flex-1">
+        <div className="my-6 px-4">
           <div className="grid grid-cols-4 gap-4">
-            {/* titulo input */}
-            <div className="col-span-4">
-              <p className="text-sm text-gray-600 mb-1 font-extrabold">
-                Título:
-              </p>
+            <div className="col-span-4 border-1 border-gray-300 rounded-lg p-2">
+              <label htmlFor="titleInput">
+                <p className="text-sm text-gray-400">Titulo:</p>
+              </label>
               <input
-                type="text"
+                id="titleInput"
                 name="title"
-                placeholder={`${content ? content.title : ""}`}
-                className="text-gray-700 bg-gray-100 p-2 rounded-xl w-full"
+                defaultValue={content ? content.title : ""}
+                className="w-full focus:outline-none text-black"
               />
             </div>
-            <div className="col-span-4">
-              <p className="text-sm text-gray-600 mb-1 font-extrabold">
-                Descripcion:
-              </p>
+            <div className="col-span-4 border-1 border-gray-300 rounded-lg p-2">
+              <label htmlFor="descriptionInput">
+                <p className="text-sm text-gray-400">Descripcion:</p>
+              </label>
               <textarea
+                id="descriptionInput"
                 name="description"
-                placeholder={`${content ? content.description : ""}`}
-                className="text-gray-700 bg-gray-100 p-2 rounded-xl w-full resize-none"
+                defaultValue={content ? content.description : ""}
+                className="resize-none w-full focus:outline-none text-black"
               />
             </div>
-            <div className="col-span-2">
-              <p className="text-sm text-gray-600 mb-1 font-extrabold">
-                Documento:
-              </p>
+            <div className="col-span-2 border-2 h-[12vh] border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition">
+              <label htmlFor="document_Path">
+                <p className="text-sm text-gray-400 p-2">Documento:</p>
 
-              <label
-                htmlFor="document_Path"
-                className="flex flex-col items-center justify-center w-full h-[90%] border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition"
-              >
-                <FolderArrowDownIcon className="size-8" />
-                <span className="text-sm text-gray-600 font-semibold">
-                  {selectedDoc && (
-                    <p className="text-xs text-green-600 mt-1 font-semibold text-center">
-                      {selectedDoc}
-                    </p>
-                  )}
-                </span>
-                <span className="text-xs text-gray-400">PDF/DOCX</span>
+                <div className="flex flex-col items-center justify-center">
+                  <FolderArrowDownIcon className="size-8" />
+                  <span className="text-sm text-gray-600 font-semibold">
+                    {selectedDoc && (
+                      <p className="text-xs text-green-600 mt-1 font-semibold text-center">
+                        {selectedDoc}
+                      </p>
+                    )}
+                  </span>
+                  <span className="text-xs text-gray-400">PDF/DOCX</span>
+                </div>
               </label>
 
               <input
@@ -157,24 +183,21 @@ export default function ContentCourseModal({
             </div>
 
             {/* Video input */}
-            <div className="col-span-2">
-              <p className="text-sm text-gray-600 mb-1 font-extrabold">
-                Video:
-              </p>
+            <div className="col-span-2 border-2 h-[12vh] border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition">
+              <label htmlFor="video_Path">
+                <p className="text-sm text-gray-400 p-2">Video:</p>
 
-              <label
-                htmlFor="video_Path"
-                className="flex flex-col items-center justify-center w-full h-[90%] border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition"
-              >
-                <FolderArrowDownIcon className="size-8" />
-                <span className="text-sm text-gray-600 font-semibold">
-                  {selectedVideo && (
-                    <p className="text-xs text-green-600 mt-1 font-semibold text-center">
-                      {selectedVideo}
-                    </p>
-                  )}
-                </span>
-                <span className="text-xs text-gray-400">MP4</span>
+                <div className="flex flex-col items-center justify-center">
+                  <FolderArrowDownIcon className="size-8" />
+                  <span className="text-sm text-gray-600 font-semibold">
+                    {selectedVideo && (
+                      <p className="text-xs text-green-600 mt-1 font-semibold text-center">
+                        {selectedVideo}
+                      </p>
+                    )}
+                  </span>
+                  <span className="text-xs text-gray-400">MP4</span>{" "}
+                </div>
               </label>
 
               <input
@@ -200,29 +223,19 @@ export default function ContentCourseModal({
               )}
             </div>
 
-            <div className="col-span-4 mt-4">
-              <p className="text-sm text-gray-600 mb-1 font-extrabold">
-                Orden:
-              </p>
+            <div className="col-span-4 border-1 border-gray-300 rounded-lg p-2">
+              <label htmlFor="orderNumberInput">
+                <p className="text-sm text-gray-400 mb-1">Orden:</p>
+              </label>
               <input
+                id="orderNumberInput"
                 type="number"
                 name="orderNumber"
-                placeholder={`${content ? content.order_number : ""}`}
-                className="text-gray-700 bg-gray-100 p-2 rounded-xl w-full"
+                defaultValue={content ? content.order_number : ""}
+                className="w-full focus:outline-none text-black"
               />
             </div>
           </div>
-        </div>
-
-        {/* Boton de guardar los cambios :v */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="bg-green-400 inline-flex items-center p-2 gap-2 rounded-xl"
-          >
-            <ArrowDownTrayIcon className="size-6" />
-            <span className="font-extrabold">Guardar cambios</span>
-          </button>
         </div>
       </form>
       {preview && (

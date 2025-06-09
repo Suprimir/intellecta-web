@@ -32,7 +32,8 @@ export async function GET(request: NextRequest) {
     let queryParams: any[] = [];
 
     if (uuid) {
-      query = `SELECT c.id,
+      query = `
+              SELECT c.id,
                 c.name, 
                 c.description, 
                 c.image, 
@@ -44,25 +45,28 @@ export async function GET(request: NextRequest) {
                 c.category_ID, 
                 cat.description AS category_name, 
                 c.price,
+                r.rating AS userRating,
                 CASE 
                     WHEN pc.course_ID IS NOT NULL THEN "purchased"
                     WHEN sd.course_ID IS NOT NULL THEN "cart"
                     ELSE ""
                 END AS "location"
-          FROM courses c 
-          JOIN users u ON u.uuid = c.instructor_ID
-          JOIN categories cat ON c.category_ID = cat.id
-          LEFT JOIN shoppingcarts s ON s.uuid = ?
-          LEFT JOIN shoppingcarts_details sd ON sd.shoppingCart_ID = s.id AND sd.course_ID = c.id
-          LEFT JOIN purchased_courses pc ON pc.course_ID = c.id AND pc.user_ID = ?
-          ORDER BY 
-          CASE 
-              WHEN pc.course_ID IS NOT NULL THEN 2 
-              WHEN sd.course_ID IS NOT NULL THEN 1
-              ELSE 0                               
-          END ASC`;
+            FROM courses c 
+            JOIN users u ON u.uuid = c.instructor_ID
+            JOIN categories cat ON c.category_ID = cat.id
+            LEFT JOIN shoppingcarts s ON s.uuid = ?
+            LEFT JOIN shoppingcarts_details sd ON sd.shoppingCart_ID = s.id AND sd.course_ID = c.id
+            LEFT JOIN purchased_courses pc ON pc.course_ID = c.id AND pc.user_ID = s.uuid
+            LEFT JOIN ratings r ON r.user_ID = s.uuid AND r.course_ID = pc.course_ID
+            ORDER BY 
+            CASE 
+                WHEN pc.course_ID IS NOT NULL THEN 2 
+                WHEN sd.course_ID IS NOT NULL THEN 1
+                ELSE 0                               
+            END ASC
+          `;
 
-      queryParams = [uuid, uuid];
+      queryParams = [uuid];
     } else {
       query = `SELECT c.id,
                 c.name, 

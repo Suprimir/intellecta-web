@@ -1,5 +1,14 @@
 import { NextResponse, NextRequest } from "next/server";
 import { pool } from "@/libs/mysql";
+import { renderCertificateHTML } from "@/utils/renderCertificateHTML";
+import path from "path";
+import fs from "fs";
+import puppeteer from "puppeteer";
+import { CertificateData } from "@/types/api";
+
+interface NextID {
+  AUTO_INCREMENT: number;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -64,10 +73,70 @@ export async function POST(request: NextRequest) {
     );
 
     if (contentsCompleted.length === contentIdsArray.length) {
-      await pool.query(
-        "INSERT INTO certificates (user_ID, course_ID) VALUES (?, ?)",
-        [uuid, course_ID]
+      const certificateData: CertificateData[] = await pool.query(
+        `
+        SELECT CONCAT_WS(" ", u.name, u.last_name) as studentName, c.name AS courseName, cat.description as categoryName, c.duration
+        FROM users u
+        LEFT JOIN courses c ON c.id = ?
+        JOIN categories cat ON cat.id = c.category_ID
+        WHERE u.uuid = ?;
+        `,
+        [course_ID, uuid]
       );
+
+      const data: NextID[] = await pool.query(
+        "SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'certificates';"
+      );
+
+      certificateData[0].id = data[0].AUTO_INCREMENT;
+
+      const certificatesDir = path.join(
+        process.cwd(),
+        "public",
+        "certificates"
+      );
+      if (!fs.existsSync(certificatesDir)) {
+        fs.mkdirSync(certificatesDir, { recursive: true });
+      }
+
+      const fileName = `certificate-${uuid}-${course_ID}.pdf`;
+      const filePath = path.join(certificatesDir, fileName);
+
+      const html = renderCertificateHTML(certificateData[0]);
+
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      });
+
+      const page = await browser.newPage();
+
+      await page.setContent(html, {
+        waitUntil: "networkidle0",
+      });
+
+      const pdfBuffer = await page.pdf({
+        format: "A4",
+        landscape: true,
+        printBackground: true,
+        preferCSSPageSize: true,
+        margin: {
+          top: "0",
+          right: "0",
+          bottom: "0",
+          left: "0",
+        },
+      });
+
+      await browser.close();
+
+      fs.writeFileSync(filePath, pdfBuffer);
+
+      await pool.query(
+        "INSERT INTO certificates (user_ID, course_ID, pdf_Path) VALUES (?, ?, ?)",
+        [uuid, course_ID, filePath]
+      );
+
       return NextResponse.json(
         { message: "Certificado solicitado." },
         { status: 200 }

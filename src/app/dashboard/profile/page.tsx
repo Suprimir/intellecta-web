@@ -206,6 +206,13 @@ export default function UserProfile({
                       </div>
                     </div>
                   ))}
+                <a
+                  href={`/dashboard/certificates?uuid=${uuid}`}
+                  className="text-sm text-teal-600 hover:underline"
+                >
+                  Ver todos los certificados{" "}
+                  <ChevronRight className="inline size-4" />
+                </a>
               </div>
             </div>
           </div>

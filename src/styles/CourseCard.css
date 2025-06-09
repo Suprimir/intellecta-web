@@ -1,0 +1,11 @@
+.popOverStars {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s linear 0.3s, opacity 0.3s linear;
+}
+
+.popOverStarsButton:hover .popOverStars {
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
